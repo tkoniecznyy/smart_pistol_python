@@ -1,24 +1,24 @@
-from typing import List
-
-from networkx import Graph
-
+import networkx as nx
 from .location import Location
-from .geolocated_actor import GeolocatedActor
+
+
+class RoutingError(Exception):
+    pass
 
 
 class Map:
     """
-    Class which is responsible for location of the actors and managing its graph
+    Class which can give directions, and manages related city graph
     """
-    def __init__(self, actors: List[GeolocatedActor], graph: Graph):
-        # TODO: Adding actors to the graph at set location + validation
-        pass
 
-    def find_nearest_actor(self, location: Location, actor_class):
-        pass
+    def __init__(self, graph: nx.Graph):
+        self.graph = graph
 
-    def route(self, a: Location, b: Location):
-        pass
-
-    def place_actor_at(self, actor, location: Location):
-        pass
+    def route(self, source: Location, target: Location):
+        if self.graph.has_node(source) and self.graph.has_node(target):
+            try:
+                return nx.shortest_path(self.graph, source, target)
+            except nx.exception.NetworkXNoPath:
+                raise RoutingError('No path found between source and target')
+        else:
+            raise RoutingError('Route for non-existing location has been requested!')

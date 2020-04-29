@@ -19,16 +19,26 @@ class Policeman(BaseActor, GeolocatedActor):
         Class for keeping policeman purposes
         """
         IDLE = 'idle'
+        PATROL = 'patrol'
 
     def __init__(self, purpose: PolicemanPurpose, location: Location):
         super().__init__(purpose)
         super(BaseActor, self).__init__(location)
 
-    def tick_action(self) -> Callable:
+    def tick_action(self, notifications) -> Callable:
+        # TODO: Determine undertaken action on notifications in the system
+        print(str(id(self)) + 'has received ' + notifications + ' nots in this tick')
         def action():
-            print('My location is ', self._location)  # TODO: Remove
+            print('My location is ', self._location.id)  # TODO: Remove
+
+            {
+                Policeman.PolicemanPurpose.IDLE: lambda: None,
+                Policeman.PolicemanPurpose.PATROL: lambda: patrol_actions
+            }[self.purpose]()
 
         return action
+
+
 
     def location(self) -> Location:
         return self._location
