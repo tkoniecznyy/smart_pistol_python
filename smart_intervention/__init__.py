@@ -14,15 +14,14 @@ from smart_intervention.utils.iter_utils import pick_random, generate_n
 POLICEMEN_COUNT = 10
 NODE_COUNT = 10
 
+nodes = generate_n(lambda _: Location(), n=NODE_COUNT)
+city_graph = graphs.gnp_directed_graph(nodes, .2)
+Notifications = NotificationStore()
+CityMap = Map(city_graph)
 
-notification_store = NotificationStore()
-city_map = Map()
 
 def do_simple_simulation():
-    nodes = generate_n(lambda _: Location(), n=NODE_COUNT)
-
-    graph = graphs.gnp_directed_graph(nodes, .2)
-    police_outposts = [pick_random(graph.nodes), pick_random(graph.nodes)]
+    police_outposts = [pick_random(city_graph.nodes), pick_random(city_graph.nodes)]
 
     policemen = generate_n(
         lambda _: Policeman(purpose=Policeman.PolicemanPurpose.IDLE, location=pick_random(police_outposts)),
@@ -32,7 +31,6 @@ def do_simple_simulation():
     initial_actors = [
         *policemen
     ]
-    sim_map = Map(initial_actors, graph)
     sim_manager = SimulationManager(initial_actors)
 
 

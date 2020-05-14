@@ -15,3 +15,6 @@ class Location:
 
     def __hash__(self):
         return hash(self.id)
+
+    def get_intervention_event(self):
+        raise NotImplementedError  # TODO: Implement
