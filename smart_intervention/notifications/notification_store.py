@@ -4,6 +4,8 @@ from typing import List
 
 import dataclasses as dc
 
+from smart_intervention.models.actors.bases import BaseActor
+
 
 class NotificationType(Enum):
     pass
@@ -15,6 +17,7 @@ class Notification:
     Base class for notifications
     """
     type: NotificationType = dc.field()
+    actor: BaseActor = dc.field()
     payload: dict = dc.field(default_factory=dict)
 
 
@@ -27,9 +30,8 @@ class NotificationStore:
         self.notifications = []
         self.cache = []
 
-    def send(self, payload, notification_type):
-        notification = Notification(type=notification_type, payload=payload)
-        self.notifications.append(notification)
+    def send(self, notification_type, actor, payload):
+        self.notifications.append(Notification(notification_type, payload, actor))
 
     def flush(self) -> List[Notification]:
         self.cache += self.notifications  # Store this for viewing later in the report
