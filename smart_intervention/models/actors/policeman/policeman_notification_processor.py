@@ -3,6 +3,8 @@ from smart_intervention.models.actors.policeman.policeman import Policeman, Poli
 from collections import defaultdict
 
 
+# TODO: Resolve problems with private variables access, it's fine for now
+
 class PolicemanNotificationProcessor:
 
     def __init__(self, policeman):
@@ -21,12 +23,22 @@ class PolicemanNotificationProcessor:
     def _get_action(self, notification):
         if notification.type is ManagementCenter.ManagementCenterNotification.DISPATCH_TO_GUNFIGHT:
             return lambda: self._dispatch_to_gunfight(notification.payload['location'])
+
         if notification.type is ManagementCenter.ManagementCenterNotification.DISPATCH_TO_INTERVENTION:
             return lambda: self._dispatch_to_intervention(notification.payload['location'])
+
         if notification.type is ManagementCenter.ManagementCenterNotification.DISPATCH_TO_PATROL:
             return lambda: self._dispatch_to_intervention(notification.payload['route'])
 
+        if notification.type is ManagementCenter.ManagementCenterNotification.DISMISS_FROM_INTERVENTION_CALL:
+            return lambda: self._dismiss_from_intervention_call()
+
+        if notification.type is ManagementCenter.ManagementCenterNotification.DISMISS_FROM_GUNFIGHT_CALL:
+            return lambda: self._dismiss_from_gunfight_call()
+
+
     def _choose_actions(self, actions):
+        # TODO FIXME Process here dispatch cancellin
         notification_type_priorities = [
             ManagementCenter.ManagementCenterNotification.DISPATCH_TO_GUNFIGHT,
             ManagementCenter.ManagementCenterNotification.DISPATCH_TO_INTERVENTION,
@@ -35,7 +47,7 @@ class PolicemanNotificationProcessor:
         for notification_type in notification_type_priorities:
             act = self._first_action_by_notification_type(actions, notification_type)
             if act:
-                return [act]  # TODO: Other notifications then dispatch? Only one dispatch allowed in processing
+                return [act]
 
     @staticmethod
     def _first_action_by_notification_type(actions, notification_type):
@@ -61,3 +73,9 @@ class PolicemanNotificationProcessor:
             policeman.re_purpose(Policeman.PolicemanPurpose.PATROL)
         else:
             raise PolicemanError(f'Cannot send a unit to patrol while its {policeman.purpose}')
+
+    def _dismiss_from_intervention_call(self):
+        raise NotImplementedError  # TODO: Implement
+
+    def _dismiss_from_gunfight_call(self):
+        raise NotImplementedError  # TODO: Implement

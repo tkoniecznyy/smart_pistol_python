@@ -12,6 +12,5 @@ class PassiveActorPurpose(Purpose):
     IDLE = 'idle'
 
 
-class ActiveActorPurpose(PassiveActorPurpose):
-    ENROUTE_ASSISTANCE = 'enroute_assistance'
-    ASSISTING = 'assisting'
+class AssistingActorPurpose(PassiveActorPurpose):
+    ROUTING_TO_ASSIST = 'routing_to_assist'

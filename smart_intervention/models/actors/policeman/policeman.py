@@ -1,10 +1,10 @@
 from typing import Callable
 
 from smart_intervention import CityMap, Notifications
-from smart_intervention.models.actors.bases.base_actor import BaseActor
 from smart_intervention.geolocation.geolocated_actor import GeolocatedActor
 from smart_intervention.geolocation.location import Location
-from smart_intervention.models.actors.bases.purpose import ActiveActorPurpose
+from smart_intervention.models.actors.bases.purpose import PassiveActorPurpose
+from smart_intervention.models.actors.bases.purposeful_actor import PurposefulActor
 from smart_intervention.models.actors.policeman.policeman_action import PolicemanAction
 from smart_intervention.models.actors.policeman.policeman_notification_processor import PolicemanNotificationProcessor
 from smart_intervention.notifications.notification_store import NotificationType
@@ -14,7 +14,7 @@ class PolicemanError(Exception):
     pass
 
 
-class Policeman(BaseActor, GeolocatedActor):
+class Policeman(PurposefulActor, GeolocatedActor):
     """
     Actor which can be re-purposed by headquarters or simulation manager to dispatch it to assist other units
     Can dispatch messages to simulation manager for requesting of assistance in intervention
@@ -25,7 +25,7 @@ class Policeman(BaseActor, GeolocatedActor):
         BACKUP_NEEDED = 'backup_needed'
         IN_COMBAT = 'in_combat'
 
-    class PolicemanPurpose(ActiveActorPurpose):
+    class PolicemanPurpose(PassiveActorPurpose):
         """
         Class for keeping policeman purposes
         """
@@ -37,7 +37,7 @@ class Policeman(BaseActor, GeolocatedActor):
 
     def __init__(self, purpose: PolicemanPurpose, location: Location, success_rate):
         super().__init__(purpose)
-        super(BaseActor, self).__init__(location)
+        super(PurposefulActor, self).__init__(location)
         self._last_purpose = purpose
         self.success_rate = success_rate
 
@@ -55,8 +55,6 @@ class Policeman(BaseActor, GeolocatedActor):
             PolicemanAction(self).execute()
 
         return action
-
-    # INTERNAL STATE CHANGES
 
     def _store_purpose(self, purpose):
         arrived_at_intervention = purpose in [
