@@ -1,6 +1,5 @@
 from smart_intervention.models.actors.management_center import ManagementCenter
 from smart_intervention.models.actors.policeman.policeman import Policeman, PolicemanError
-from collections import defaultdict
 
 
 # TODO: Resolve problems with private variables access, it's fine for now
@@ -11,12 +10,7 @@ class PolicemanNotificationProcessor:
         self._policeman = policeman
 
     def process(self, notifications):
-        actions = defaultdict(list)
-        for notification in notifications:
-            action = self._get_action(notification)
-            actions[notification.type].append(action)
-
-        actions = self._choose_actions(actions)
+        actions = [self._get_action(notification) for notification in notifications]
         for action in actions:
             action()
 
@@ -31,31 +25,10 @@ class PolicemanNotificationProcessor:
             return lambda: self._dispatch_to_intervention(notification.payload['route'])
 
         if notification.type is ManagementCenter.ManagementCenterNotification.DISMISS_FROM_INTERVENTION_CALL:
-            return lambda: self._dismiss_from_intervention_call()
+            return lambda: self._dismiss_from_call()
 
         if notification.type is ManagementCenter.ManagementCenterNotification.DISMISS_FROM_GUNFIGHT_CALL:
-            return lambda: self._dismiss_from_gunfight_call()
-
-
-    def _choose_actions(self, actions):
-        # TODO FIXME Process here dispatch cancellin
-        notification_type_priorities = [
-            ManagementCenter.ManagementCenterNotification.DISPATCH_TO_GUNFIGHT,
-            ManagementCenter.ManagementCenterNotification.DISPATCH_TO_INTERVENTION,
-            ManagementCenter.ManagementCenterNotification.DISPATCH_TO_PATROL,
-        ]
-        for notification_type in notification_type_priorities:
-            act = self._first_action_by_notification_type(actions, notification_type)
-            if act:
-                return [act]
-
-    @staticmethod
-    def _first_action_by_notification_type(actions, notification_type):
-        actions_list = actions[notification_type]
-        try:
-            return actions_list[0]
-        except IndexError:
-            return None
+            return lambda: self._dismiss_from_call()
 
     def _dispatch_to_intervention(self, location):
         self._policeman._route_with_purpose(location, Policeman.PolicemanPurpose.ROUTING_TO_INTERVENTION)
@@ -74,8 +47,5 @@ class PolicemanNotificationProcessor:
         else:
             raise PolicemanError(f'Cannot send a unit to patrol while its {policeman.purpose}')
 
-    def _dismiss_from_intervention_call(self):
-        raise NotImplementedError  # TODO: Implement
-
-    def _dismiss_from_gunfight_call(self):
-        raise NotImplementedError  # TODO: Implement
+    def _dismiss_from_call(self):
+        self._policeman._return_to_duty()

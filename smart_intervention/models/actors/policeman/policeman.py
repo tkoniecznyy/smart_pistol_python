@@ -72,7 +72,7 @@ class Policeman(PurposefulActor, GeolocatedActor):
         self._route_to(CityMap.route(self.location, location))
         self.re_purpose(purpose)
 
-    def _try_join_event(self):  # TODO: Insert random intervention events to locations in sim manager
+    def _try_join_event(self):
         intervention_event = self.location.get_intervention_event()
         if intervention_event:
             self._intervention_event = intervention_event
