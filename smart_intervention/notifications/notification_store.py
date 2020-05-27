@@ -1,25 +1,7 @@
-from dataclasses import dataclass
-from enum import Enum
-from typing import List
-
-import dataclasses as dc
-
-from smart_intervention.models.actors.bases import BaseActor
+from smart_intervention.notifications.notification import Notification, Notifications
 
 
-class NotificationType(Enum):
-    pass
-
-
-@dataclass
-class Notification:
-    """
-    Base class for notifications
-    """
-    type: NotificationType = dc.field()
-    actor: BaseActor = dc.field()
-    payload: dict = dc.field(default_factory=dict)
-
+# TODO: Remove this facade
 
 class NotificationStore:
     """
@@ -27,14 +9,14 @@ class NotificationStore:
     """
 
     def __init__(self):
-        self.notifications = []
-        self.cache = []
+        self.notifications = Notifications()
 
     def send(self, notification_type, actor, payload):
-        self.notifications.append(Notification(notification_type, payload, actor))
+        self.notifications.add(Notification(notification_type, payload, actor))
 
-    def flush(self) -> List[Notification]:
-        self.cache += self.notifications  # Store this for viewing later in the report
-        values = self.notifications
-        self.notifications = []
-        return values
+    def flush(self):
+        return self.notifications.flush()
+
+    def clear(self):
+        self.notifications.clear()
+

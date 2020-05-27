@@ -1,5 +1,8 @@
 from functools import reduce
 
+from smart_intervention import SimulationVariables, SimulationVariableType
+from smart_intervention.utils.random import random_decision
+
 
 class InterventionEvent:
     def __init__(self, danger, event_health, location):
@@ -9,40 +12,39 @@ class InterventionEvent:
         """
         self._danger = danger
         self._location = location
-        self._event_health = event_health
+        self.event_health = event_health
+        self._initial_health = event_health
 
-        self._participating_entities = []
-        self._armed_combat = False
+        self._participating_actors = []
+        self._incoming_actors = []
+        self.armed_combat = False
 
-    def mitigate(self, entity):
-        self._event_health -= entity.success_rate  # Simple 1-1
+    def mitigate(self, actor):
+        if random_decision(SimulationVariables[SimulationVariableType.GUNFIGHT_BREAKOUT_RATE]):
+            self.armed_combat = True
+            # We re-set event's health to initial health increased with contextual danger
+            self.event_health = self._initial_health + (self._initial_health * self.danger_contexted)
+        else:
+            self.event_health -= actor.success_rate  # Simple 1-1
 
-    def join(self, entity):
-        self._participating_entities.append(entity)
+    def join(self, actor):
+        self._participating_actors.append(actor)
 
     def active(self):
-        return self._event_health > 0
-
-    @property
-    def armed_combat(self):
-        """
-        The method is calculating mean success rate, and if it's lesser than event danger, combat is not triggered
-        """
-        if not self._armed_combat:
-            combat_triggered = self._danger_contexted > self._mean_success_rate
-            self._armed_combat = combat_triggered
-            return combat_triggered
-        else:
-            return True
+        return self.event_health > 0
 
     @property
     def _mean_success_rate(self):
-        entities_count = len(self._participating_entities)
+        actors_count = len(self._participating_actors)
         return reduce(
-            lambda acc, entity: acc + entity.success_rate,
-            self._participating_entities
-        ) / entities_count
+            lambda acc, actor: acc + actor.success_rate,
+            self._participating_actors
+        ) / actors_count
 
     @property
-    def _danger_contexted(self):   # TODO: Implement using time contextualness here
-        return self._danger * (1 + self._location.danger_factor())
+    def danger_contexted(self):  # TODO: Implement using time contextualness here
+        return self._danger * (1 + self._location.danger_factor)
+
+    @property
+    def sufficient_backup(self):
+        raise NotImplementedError  # TODO: Implement

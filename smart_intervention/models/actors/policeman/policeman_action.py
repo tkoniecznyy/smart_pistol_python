@@ -1,12 +1,13 @@
 from smart_intervention.models.actors.action import Action
-from smart_intervention.models.actors.policeman.policeman import Policeman
-
+from smart_intervention.models.actors.policeman.policeman import Policeman, PolicemanError
 
 # TODO: Resolve problems with private variables access, it's fine for now
+from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
+
 
 def return_to_duty_if_inactive(callback):
     def decorated(self, *args, **kwargs):
-        if self._policeman._intervention_event.active:
+        if self._policeman.intervention_event.active:
             callback(self, *args, **kwargs)
         else:
             self._return_to_duty()
@@ -38,35 +39,35 @@ class PolicemanAction(Action):
 
     def _patrol_actions(self):
         policeman = self._policeman
-        if not policeman._current_route:
-            policeman._current_route = policeman._patrol_route.copy()
+        if not policeman.current_route:
+            policeman.current_route = policeman.patrol_route.copy()
 
-        policeman.move_forward(policeman._current_route)
-        policeman._try_join_event()
+        policeman.move_forward(policeman.current_route)
 
     @return_to_duty_if_inactive
     def _intervention_actions(self):
         policeman = self._policeman
-        if policeman._intervention_event.armed_combat:
+        if policeman.intervention_event.armed_combat:
             policeman.re_purpose(Policeman.PolicemanPurpose.GUNFIGHT)
         else:
-            policeman._intervention_event.mitigate(policeman)
+            policeman.intervention_event.mitigate(policeman)
+            policeman.send_notification(notification_type=PolicemanNotification.INTERVENTION)
 
     @return_to_duty_if_inactive
     def _gunfight_actions(self):
         policeman = self._policeman
-        if not policeman._intervention_event.sufficient_backup:
-            notification_type = Policeman.PolicemanNotification.BACKUP_NEEDED
+        if not policeman.intervention_event.sufficient_backup:
+            notification_type = PolicemanNotification.BACKUP_NEEDED
         else:
-            notification_type = Policeman.PolicemanNotification.IN_COMBAT
+            notification_type = PolicemanNotification.GUNFIGHT
 
-        policeman._send_notification_with_location(notification_type=notification_type)
-        policeman._intervention_event.mitigate(policeman)
+        policeman.send_notification_with_location(notification_type=notification_type)
+        policeman.intervention_event.mitigate(policeman)
 
     def _routing_actions(self):
         policeman = self._policeman
-        if policeman._current_route:
-            policeman.move_forward(policeman._current_route)
-            policeman._try_join_event()
-        else:
+        try:
+            policeman.move_and_join_event()
+        except PolicemanError as p_err:
+            print(p_err)  # TODO: logging mechanism
             policeman.re_purpose(Policeman.PolicemanPurpose.IDLE)

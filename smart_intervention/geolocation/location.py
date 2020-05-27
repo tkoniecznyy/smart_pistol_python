@@ -18,3 +18,7 @@ class Location:
 
     def get_intervention_event(self):
         raise NotImplementedError  # TODO: Implement
+
+    @property
+    def danger_factor(self):
+        raise NotImplementedError  # TODO: Implement

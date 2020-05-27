@@ -3,11 +3,12 @@ from typing import Callable
 from smart_intervention import CityMap, Notifications
 from smart_intervention.geolocation.geolocated_actor import GeolocatedActor
 from smart_intervention.geolocation.location import Location
+from smart_intervention.geolocation.map import RoutingError
 from smart_intervention.models.actors.bases.purpose import PassiveActorPurpose
 from smart_intervention.models.actors.bases.purposeful_actor import PurposefulActor
 from smart_intervention.models.actors.policeman.policeman_action import PolicemanAction
+from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
 from smart_intervention.models.actors.policeman.policeman_notification_processor import PolicemanNotificationProcessor
-from smart_intervention.notifications.notification_store import NotificationType
 
 
 class PolicemanError(Exception):
@@ -20,10 +21,6 @@ class Policeman(PurposefulActor, GeolocatedActor):
     Can dispatch messages to simulation manager for requesting of assistance in intervention
     Is geolocated and capable of moving around the map for fulfilling its current purpose
     """
-
-    class PolicemanNotification(NotificationType):
-        BACKUP_NEEDED = 'backup_needed'
-        IN_COMBAT = 'in_combat'
 
     class PolicemanPurpose(PassiveActorPurpose):
         """
@@ -41,9 +38,9 @@ class Policeman(PurposefulActor, GeolocatedActor):
         self._last_purpose = purpose
         self.success_rate = success_rate
 
-        self._current_route = None
-        self._patrol_route = None
-        self._intervention_event = None
+        self.current_route = None
+        self.patrol_route = None
+        self.intervention_event = None
 
     def re_purpose(self, purpose):
         self._store_purpose(purpose)
@@ -51,7 +48,8 @@ class Policeman(PurposefulActor, GeolocatedActor):
 
     def tick_action(self, notifications) -> Callable:
         def action():
-            PolicemanNotificationProcessor(self).process(notifications)
+            processable_notifications = notifications.get_notifications_for_processing(self)
+            PolicemanNotificationProcessor(self).process(processable_notifications)
             PolicemanAction(self).execute()
 
         return action
@@ -66,32 +64,46 @@ class Policeman(PurposefulActor, GeolocatedActor):
             self._last_location = self.location
 
     def _route_to(self, route):
-        self._current_route = route
+        self.current_route = route
 
-    def _route_with_purpose(self, location, purpose):
+    def route_with_purpose(self, location, purpose):
         self._route_to(CityMap.route(self.location, location))
         self.re_purpose(purpose)
 
-    def _try_join_event(self):
+    def try_join_event(self):
         intervention_event = self.location.get_intervention_event()
         if intervention_event:
-            self._intervention_event = intervention_event
+            self.intervention_event = intervention_event
             intervention_event.join(self)
 
             if intervention_event.armed_combat:
                 self.re_purpose(Policeman.PolicemanPurpose.GUNFIGHT)
             else:
                 self.re_purpose(Policeman.PolicemanPurpose.INTERVENTION)
+        else:
+            raise PolicemanError('No event in given location')
 
-    def _return_to_duty(self):
+    def return_to_duty(self):
         if self._last_purpose is Policeman.PolicemanPurpose.PATROL:
             self.re_purpose(Policeman.PolicemanPurpose.PATROL)
         elif self._last_purpose is Policeman.PolicemanPurpose.IDLE:
             self._route_to(CityMap.route(self.location, self._last_location))
+        self.send_notification(notification_type=PolicemanNotification.RETURNING_TO_DUTY)
 
-    def _send_notification_with_location(self, notification_type):
+    def move_and_join_event(self):
+        try:
+            self.move_forward(self.current_route)
+        except RoutingError:
+            self.try_join_event()
+
+    def send_notification(self, notification_type, payload=None):
         Notifications.send(
             actor=self,
             notification_type=notification_type,
-            payload={'location': self.location},
+            payload=payload
+        )
+
+    def send_notification_with_location(self, notification_type):
+        self.send_notification(
+            notification_type=notification_type, payload={'location': self.location}
         )

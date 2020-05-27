@@ -1,8 +1,7 @@
-from smart_intervention.models.actors.management_center import ManagementCenter
+from smart_intervention.models.actors.management_center.management_center_notification import \
+    ManagementCenterNotification
 from smart_intervention.models.actors.policeman.policeman import Policeman, PolicemanError
 
-
-# TODO: Resolve problems with private variables access, it's fine for now
 
 class PolicemanNotificationProcessor:
 
@@ -15,26 +14,26 @@ class PolicemanNotificationProcessor:
             action()
 
     def _get_action(self, notification):
-        if notification.type is ManagementCenter.ManagementCenterNotification.DISPATCH_TO_GUNFIGHT:
+        if notification.type is ManagementCenterNotification.DISPATCH_TO_GUNFIGHT:
             return lambda: self._dispatch_to_gunfight(notification.payload['location'])
 
-        if notification.type is ManagementCenter.ManagementCenterNotification.DISPATCH_TO_INTERVENTION:
+        if notification.type is ManagementCenterNotification.DISPATCH_TO_INTERVENTION:
             return lambda: self._dispatch_to_intervention(notification.payload['location'])
 
-        if notification.type is ManagementCenter.ManagementCenterNotification.DISPATCH_TO_PATROL:
+        if notification.type is ManagementCenterNotification.DISPATCH_TO_PATROL:
             return lambda: self._dispatch_to_intervention(notification.payload['route'])
 
-        if notification.type is ManagementCenter.ManagementCenterNotification.DISMISS_FROM_INTERVENTION_CALL:
+        if notification.type is ManagementCenterNotification.DISMISS_FROM_INTERVENTION_CALL:
             return lambda: self._dismiss_from_call()
 
-        if notification.type is ManagementCenter.ManagementCenterNotification.DISMISS_FROM_GUNFIGHT_CALL:
+        if notification.type is ManagementCenterNotification.DISMISS_FROM_GUNFIGHT_CALL:
             return lambda: self._dismiss_from_call()
 
     def _dispatch_to_intervention(self, location):
-        self._policeman._route_with_purpose(location, Policeman.PolicemanPurpose.ROUTING_TO_INTERVENTION)
+        self._policeman.route_with_purpose(location, Policeman.PolicemanPurpose.ROUTING_TO_INTERVENTION)
 
     def _dispatch_to_gunfight(self, location):
-        self._policeman._route_with_purpose(location, Policeman.PolicemanPurpose.ROUTING_TO_GUNFIGHT)
+        self._policeman.route_with_purpose(location, Policeman.PolicemanPurpose.ROUTING_TO_GUNFIGHT)
 
     def _dispatch_to_patrol(self, route):
         policeman = self._policeman
@@ -48,4 +47,4 @@ class PolicemanNotificationProcessor:
             raise PolicemanError(f'Cannot send a unit to patrol while its {policeman.purpose}')
 
     def _dismiss_from_call(self):
-        self._policeman._return_to_duty()
+        self._policeman.return_to_duty()
