@@ -7,10 +7,13 @@ from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarte
 from smart_intervention.models.actors.bases import BaseActor
 from smart_intervention.models.actors.management_center.management_center import ManagementCenter
 from smart_intervention.models.actors.policeman.policeman import Policeman
-from smart_intervention.models.actors.management_center.management_center_notification import ManagementCenterNotification
+from smart_intervention.models.actors.management_center.management_center_notification import \
+    ManagementCenterNotification
 from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
 from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
-from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import AmbulanceHeadquarterNotification
+from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
+    AmbulanceHeadquarterNotification
+
 
 class NotificationType(Enum):
     pass
@@ -27,12 +30,20 @@ class Notification:
 
     def processed_by(self, requester):
         relevant_types_for_requester = {
-            ManagementCenter: [PolicemanNotification, AmbulanceHeadquarterNotification],
+            ManagementCenter: [PolicemanNotification],
             Policeman: [ManagementCenterNotification],
             AmbulanceHeadquarter: [AmbulanceNotification],
             Ambulance: [AmbulanceHeadquarterNotification],
         }[requester.__class__]
-        return self.type in relevant_types_for_requester
+
+        relevant_instances_for_requester = {
+            ManagementCenter: [
+                AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_ACCEPTED,
+                AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_REJECTED,
+                AmbulanceNotification.ASSISTING,
+            ]
+        }[requester.__class__]
+        return self.type in relevant_types_for_requester or self.type in relevant_instances_for_requester
 
 
 class Notifications:

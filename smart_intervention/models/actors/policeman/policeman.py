@@ -71,7 +71,7 @@ class Policeman(PurposefulActor, GeolocatedActor):
         self.re_purpose(purpose)
 
     def try_join_event(self):
-        intervention_event = self.location.get_intervention_event()
+        intervention_event = self.location.intervention_event
         if intervention_event:
             self.intervention_event = intervention_event
             intervention_event.join(self)
