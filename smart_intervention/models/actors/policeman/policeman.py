@@ -32,11 +32,11 @@ class Policeman(PurposefulActor, GeolocatedActor):
         ROUTING_TO_INTERVENTION = 'routing_to_intervention'
         ROUTING_TO_GUNFIGHT = 'routing_to_combat'
 
-    def __init__(self, purpose: PolicemanPurpose, location: Location, success_rate):
+    def __init__(self, purpose: PolicemanPurpose, location: Location, efficiency):
         super().__init__(purpose)
         super(PurposefulActor, self).__init__(location)
         self._last_purpose = purpose
-        self.success_rate = success_rate
+        self.efficiency = efficiency
 
         self.current_route = None
         self.patrol_route = None

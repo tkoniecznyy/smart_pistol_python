@@ -37,3 +37,5 @@ class ManagementCenter(BaseActor):
     def acknowledge_accept_ambulance_request(self, event, actor):
         self._resource_monitor.set_ambulance_state(actor, ResourceState.DISPATCHED, event)
 
+    def process_backup_needed(self, event):
+        pass # TODO: Implement

@@ -1,6 +1,7 @@
+from collections import defaultdict
 from functools import reduce
-
-from smart_intervention import SimulationVariables, SimulationVariableType
+from smart_intervention import SimulationVariables, SimulationVariableType, Policeman
+from smart_intervention.models.actors.ambulance.ambulance import Ambulance
 from smart_intervention.utils.random import random_decision
 
 
@@ -12,11 +13,10 @@ class InterventionEvent:
         """
         self._danger = danger
         self._location = location
-        self.event_health = event_health
         self._initial_health = event_health
+        self._actors_by_type = defaultdict(list)
 
-        self._participating_actors = []
-        self._incoming_actors = []
+        self.event_health = event_health
         self.armed_combat = False
 
     def mitigate(self, actor):
@@ -25,26 +25,25 @@ class InterventionEvent:
             # We re-set event's health to initial health increased with contextual danger
             self.event_health = self._initial_health + (self._initial_health * self.danger_contexted)
         else:
-            self.event_health -= actor.success_rate  # Simple 1-1
+            self.event_health -= actor.efficiency  # Simple 1-1
 
     def join(self, actor):
-        self._participating_actors.append(actor)
+        self._actors_by_type[actor.__class__].append(actor)
 
     def active(self):
         return self.event_health > 0
 
     @property
-    def _mean_success_rate(self):
-        actors_count = len(self._participating_actors)
-        return reduce(
-            lambda acc, actor: acc + actor.success_rate,
-            self._participating_actors
-        ) / actors_count
-
-    @property
     def danger_contexted(self):  # TODO: Implement using time contextualness here
         return self._danger * (1 + self._location.danger_factor)
 
+    # FIXME: Backup is sufficient, when participating entities can finish the intervention in one turn
     @property
     def sufficient_backup(self):
-        raise NotImplementedError  # TODO: Implement
+        unit_manpower = self._sum_efficiency(self._actors_by_type[Policeman])
+
+
+    @staticmethod
+    def _sum_efficiency(actors):
+        return reduce(lambda acc, actor: acc + actor.efficiency, actors, 0)
+
