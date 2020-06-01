@@ -49,6 +49,10 @@ class Policeman(PurposefulActor, GeolocatedActor):
     def tick_action(self, notifications) -> Callable:
         def action():
             processable_notifications = notifications.get_notifications_for_processing(self)
+            processable_notifications = [
+                notification for notification in processable_notifications
+                if notification.payload['policeman'] == self
+            ]  # Filter out notifications for other instances of policemen
             PolicemanNotificationProcessor(self).process(processable_notifications)
             PolicemanAction(self).execute()
 

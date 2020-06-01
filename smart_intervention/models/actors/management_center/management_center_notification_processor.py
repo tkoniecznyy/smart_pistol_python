@@ -42,10 +42,7 @@ class ManagementCenterNotificationProcessor:
     def _process_backup_needed_notifications(self, notifications):
         # TODO: Store messages in analytic model and observe redundancy in signal sending
         for event in self._cluster_backup_needed_by_event(notifications).keys():
-            if event.active:
-                self._management_center.process_backup_needed(event)
-
-
+            self._management_center.process_backup_needed(event)
 
     @staticmethod
     def _cluster_backup_needed_by_event(notifications):
@@ -103,6 +100,7 @@ class ManagementCenterNotificationProcessor:
             self._management_center.acknowledge_reject_ambulance_request(
                 location.intervention_event
             )
+
         return notifications, process_one
 
     @mass_process

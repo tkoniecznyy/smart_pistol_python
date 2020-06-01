@@ -23,7 +23,7 @@ class PolicemanNotificationProcessor:
         if notification.type is ManagementCenterNotification.DISPATCH_TO_PATROL:
             return lambda: self._dispatch_to_intervention(notification.payload['route'])
 
-        if notification.type is ManagementCenterNotification.DISMISS_FROM_INTERVENTION_CALL:
+        if notification.type is ManagementCenterNotification.DISMISS_FROM_INTERVENTION_CALL:  # TODO: Unused
             return lambda: self._dismiss_from_call()
 
         if notification.type is ManagementCenterNotification.DISMISS_FROM_GUNFIGHT_CALL:

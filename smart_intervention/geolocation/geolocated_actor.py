@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List
 from smart_intervention import CityMap
 from smart_intervention.geolocation.map import RoutingError
+
 
 class GeolocatedActor(ABC):
     """
@@ -24,7 +25,9 @@ class GeolocatedActor(ABC):
             raise RoutingError('Cannot move forward, empty route')
 
         if CityMap.are_neighbors(first_waypoint, self.location):
+            self.location.remove_actor(self)
             self.location = first_waypoint
+            self.location.add_actor(self)
         else:
             route_to_waypoint = CityMap.route(self.location, first_waypoint)
             try:

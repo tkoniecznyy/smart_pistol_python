@@ -1,3 +1,5 @@
+from itertools import chain
+
 import networkx as nx
 from .location import Location
 
@@ -22,3 +24,9 @@ class Map:
                 raise RoutingError('No path found between source and target')
         else:
             raise RoutingError('Route for non-existing location has been requested!')
+
+    def all_actors(self):
+        return chain.from_iterable(map(lambda x: x.actors, self.graph.nodes))
+
+    def get_distance(self, a, b):
+        return nx.shortest_path_length(self.graph, a, b)

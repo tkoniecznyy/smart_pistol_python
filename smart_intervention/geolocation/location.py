@@ -1,23 +1,28 @@
-from dataclasses import dataclass, field
 import uuid
-from typing import List
-
-from smart_intervention.events.intervention_event import InterventionEvent
-from smart_intervention.models.actors.bases.base_actor import BaseActor
 
 
-@dataclass(frozen=True, eq=True)
 class Location:
     """
     Class which represents a node in the graph (location on the "city map")
     """
-    intervention_event: InterventionEvent = field()
-    id: str = field(default_factory=uuid.uuid1)
-    actors: List[BaseActor] = field(default_factory=list)
+
+    def __init__(self, danger_factor=0):
+        self.danger_factor = danger_factor
+        self.intervention_event = None
+        self.actors = []
+        self.id = uuid.uuid1()
 
     def __hash__(self):
         return hash(self.id)
 
-    @property
-    def danger_factor(self):
-        raise NotImplementedError  # TODO: Implement
+    def set_intervention_event(self, event):
+        self.intervention_event = event
+
+    def add_actors(self, actors):
+        self.actors = self.actors + actors
+
+    def add_actor(self, actor):
+        self.actors = self.actors.append(actor)
+
+    def remove_actor(self, actor):
+        self.actors.remove(actor)

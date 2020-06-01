@@ -12,7 +12,7 @@ class InterventionEvent:
         :param event_health:  Positive integer, indicating how much time will this intervention consume
         """
         self._danger = danger
-        self._location = location
+        self.location = location
         self._initial_health = event_health
         self._actors_by_type = defaultdict(list)
 
@@ -35,15 +35,24 @@ class InterventionEvent:
 
     @property
     def danger_contexted(self):  # TODO: Implement using time contextualness here
-        return self._danger * (1 + self._location.danger_factor)
+        return self._danger * (1 + self.location.danger_factor)
 
-    # FIXME: Backup is sufficient, when participating entities can finish the intervention in one turn
+    # Backup is sufficient, when participating entities can finish the intervention in one turn
     @property
-    def sufficient_backup(self):
-        unit_manpower = self._sum_efficiency(self._actors_by_type[Policeman])
-
+    def backup_sufficient(self):
+        return self.missing_efficiency <= 0
 
     @staticmethod
     def _sum_efficiency(actors):
         return reduce(lambda acc, actor: acc + actor.efficiency, actors, 0)
 
+    @property
+    def missing_efficiency(self):
+        policemen_efficiency = self._sum_efficiency(self._actors_by_type[Policeman])
+        ambulances = self._actors_by_type[Ambulance]
+        # Each ambulance is half of the value of previous one, sorted by arrival
+        ambulances_added_value = reduce(
+            lambda val, tpl: val + tpl[1] * (1 / (2 ** tpl[0])),
+            enumerate(ambulances, 1), 0
+        )
+        return self.event_health - ambulances_added_value - policemen_efficiency

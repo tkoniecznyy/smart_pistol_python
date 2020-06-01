@@ -1,7 +1,6 @@
 from smart_intervention.models.actors.action import Action
 from smart_intervention.models.actors.policeman.policeman import Policeman, PolicemanError
 
-# TODO: Resolve problems with private variables access, it's fine for now
 from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
 
 
@@ -56,7 +55,7 @@ class PolicemanAction(Action):
     @return_to_duty_if_inactive
     def _gunfight_actions(self):
         policeman = self._policeman
-        if not policeman.intervention_event.sufficient_backup:
+        if not policeman.intervention_event.backup_sufficient:
             notification_type = PolicemanNotification.BACKUP_NEEDED
         else:
             notification_type = PolicemanNotification.GUNFIGHT
