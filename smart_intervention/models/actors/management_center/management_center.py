@@ -24,14 +24,19 @@ class ManagementCenter(BaseActor):
 
         def action():
             ManagementCenterNotificationProcessor(self).process(processable_notifications)
-            self._process_interventions(CityMap.get_interventions())
+            interventions = CityMap.get_interventions()
+            not_gunfight_interventions = [
+                intervention for intervention in interventions
+                if not intervention.armed_combat
+            ]
+            self._process_interventions(not_gunfight_interventions)
 
         return action
 
     def acknowledge_intervention(self, event, actor):
         self._resource_monitor.set_unit_state(actor, ResourceState.INTERVENTION, event)
 
-    def acknowledge_in_combat(self, event, actor):
+    def acknowledge_gunfight(self, event, actor):
         self._resource_monitor.set_unit_state(actor, ResourceState.GUNFIGHT, event)
 
     def acknowledge_return_to_duty(self, actor):

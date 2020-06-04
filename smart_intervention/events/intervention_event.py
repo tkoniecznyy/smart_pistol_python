@@ -21,6 +21,7 @@ class InterventionEvent:
 
     def mitigate(self, actor):
         if random_decision(SimulationVariables[SimulationVariableType.GUNFIGHT_BREAKOUT_RATE]):
+            # TODO: Log it
             self.armed_combat = True
             # We re-set event's health to initial health increased with contextual danger
             self.event_health = self._initial_health + (self._initial_health * self.danger_contexted)
@@ -28,6 +29,7 @@ class InterventionEvent:
             self.event_health -= actor.efficiency  # Simple 1-1
 
     def join(self, actor):
+        # TODO: Log it
         self._actors_by_type[actor.__class__].append(actor)
 
     def active(self):
