@@ -45,16 +45,23 @@ class InterventionEvent:
         return self.missing_efficiency <= 0
 
     @staticmethod
-    def _sum_efficiency(actors):
+    def sum_efficiency(actors):
         return reduce(lambda acc, actor: acc + actor.efficiency, actors, 0)
 
-    @property
-    def missing_efficiency(self):
-        policemen_efficiency = self._sum_efficiency(self._actors_by_type[Policeman])
-        ambulances = self._actors_by_type[Ambulance]
+    @staticmethod
+    def sum_ambulances_efficiency(ambulances):
         # Each ambulance is half of the value of previous one, sorted by arrival
-        ambulances_added_value = reduce(
+        return reduce(
             lambda val, tpl: val + tpl[1] * (1 / (2 ** tpl[0])),
             enumerate(ambulances, 1), 0
         )
-        return self.event_health - ambulances_added_value - policemen_efficiency
+
+    @staticmethod
+    def sum_ambulances_and_units_efficiency(ambulances, units):
+        return InterventionEvent.sum_efficiency(units) + InterventionEvent.sum_ambulances_efficiency(ambulances)
+
+    @property
+    def missing_efficiency(self):
+        return self.event_health - self.sum_ambulances_and_units_efficiency(
+            self._actors_by_type[Policeman], self._actors_by_type[Ambulance]
+        )

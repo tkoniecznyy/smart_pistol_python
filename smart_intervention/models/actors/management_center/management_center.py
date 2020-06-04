@@ -1,6 +1,7 @@
 from typing import Callable
 
-from smart_intervention import CityMap, Notifications
+from smart_intervention import CityMap, Notifications, SimulationVariables, SimulationVariableType
+from smart_intervention.events.intervention_event import InterventionEvent
 from smart_intervention.models.actors.bases import BaseActor
 from smart_intervention.models.actors.management_center.management_center_notification import \
     ManagementCenterNotification
@@ -15,9 +16,7 @@ from smart_intervention.models.actors.management_center.resource_monitor import 
 class ManagementCenter(BaseActor):
 
     def __init__(self, managed_units):
-        self._resource_monitor = ManagementCenterResourceMonitor()
-        for unit in managed_units:
-            self._resource_monitor.set_unit_state(unit, ResourceState.AVAILABLE)
+        self._resource_monitor = ManagementCenterResourceMonitor(managed_units)
 
     def tick_action(self, notifications) -> Callable:
         processable_notifications = notifications.get_notifications_for_processing(self)
@@ -55,32 +54,41 @@ class ManagementCenter(BaseActor):
 
     def _send_policemen_backup(self, event):
         # TODO: Logging mechanism
-        missing_efficiency = event.missing_efficiency
-        policemen = []
-        # First - take policemen which are available
-        available_policemen = self._resource_monitor.get_available_units()
-        missing_efficiency = self._take_close_policemen(
-            missing_efficiency, event.location, available_policemen, policemen
+        dispatched_efficiency = InterventionEvent.sum_ambulances_and_units_efficiency(
+            self._resource_monitor.get_dispatched_ambulances(event=event),
+            self._resource_monitor.get_dispatched_to_intervention_units(event=event)
         )
-
+        missing_efficiency = (event.missing_efficiency - dispatched_efficiency) * (1 + SimulationVariables[
+            SimulationVariableType.REDUNDANCY_OF_MANPOWER
+        ])
+        # Firstly check, if we even need more dispatched units
         if missing_efficiency > 0:
-            # Then - take policemen which are dispatched to intervention
-            dispatched_policemen = self._resource_monitor.get_dispatched_to_intervention_units()
+            policemen = []
+            # First - take policemen which are available
+            available_policemen = self._resource_monitor.get_available_units()
             missing_efficiency = self._take_close_policemen(
-                missing_efficiency, event.location, dispatched_policemen, policemen
+                missing_efficiency, event.location, available_policemen, policemen
             )
-            self._dispatch_ambulance(event)
+
             if missing_efficiency > 0:
-                # Last resort - take policemen which are intervening
-                intervening_policemen = self._resource_monitor.get_intervening_units()
-                self._take_close_policemen(
-                    missing_efficiency, event.location, intervening_policemen, policemen
+                # Then - take policemen which are dispatched to intervention
+                dispatched_policemen = self._resource_monitor.get_dispatched_to_intervention_units()
+                missing_efficiency = self._take_close_policemen(
+                    missing_efficiency, event.location, dispatched_policemen, policemen
                 )
-        for policeman in policemen:
-            self._dispatch_to_gunfight(policeman, event)
+                self._dispatch_ambulance(event)
+
+                if missing_efficiency > 0:
+                    # Last resort - take policemen which are intervening
+                    intervening_policemen = self._resource_monitor.get_intervening_units()
+                    self._take_close_policemen(
+                        missing_efficiency, event.location, intervening_policemen, policemen
+                    )
+            for policeman in policemen:
+                self._dispatch_to_gunfight(policeman, event)
 
     def _take_close_policemen(self, missing_efficiency, location, policemen_pool, policemen_to_take):
-        policemen = self._sort_closest(policemen_pool, location)
+        policemen = self._by_proximity(policemen_pool, location)
         while missing_efficiency > 0 and policemen:
             next_policeman = policemen.pop(0)
             policemen_to_take.append(next_policeman)
@@ -88,14 +96,13 @@ class ManagementCenter(BaseActor):
         return missing_efficiency
 
     @staticmethod
-    def _sort_closest(units, location, k=1):
+    def _by_proximity(units, location):
         policemen_distances = [
             (CityMap.get_distance(policeman.location, location), policeman)
             for policeman in units
         ]
         policemen_distances.sort(key=lambda x: x[0])
-        sorted_policemen = [tpl[1] for tpl in policemen_distances]
-        return sorted_policemen[:k]
+        return [tpl[1] for tpl in policemen_distances]
 
     def _process_interventions(self, interventions):
         for intervention in interventions:
@@ -133,7 +140,6 @@ class ManagementCenter(BaseActor):
         )
 
     def _dispatch_ambulance(self, event):
-
         requested_ambulance_for_event = self._resource_monitor.ambulance_requested(event)
         ambulances_available_for_event = self._resource_monitor.ambulances_available(event)
         # Omit action when ambulances are not available - response has been received

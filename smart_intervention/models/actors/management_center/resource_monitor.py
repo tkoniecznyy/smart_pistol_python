@@ -15,13 +15,13 @@ class ResourceState(Enum):
 
 class ManagementCenterResourceMonitor:
 
-    def __init__(self):
+    def __init__(self, managed_units):
         self._units = {
             ResourceState.INTERVENTION: [],
             ResourceState.GUNFIGHT: [],
             ResourceState.DISPATCHED_TO_INTERVENTION: [],
             ResourceState.DISPATCHED_TO_GUNFIGHT: [],
-            ResourceState.AVAILABLE: [],
+            ResourceState.AVAILABLE: managed_units,
         }
         self._units_by_event = defaultdict(lambda: defaultdict(lambda: []))
         self._ambulances = {
@@ -42,8 +42,17 @@ class ManagementCenterResourceMonitor:
     def get_intervening_units(self):
         return self._units[ResourceState.INTERVENTION]
 
-    def get_dispatched_to_intervention_units(self):
-        return self._units[ResourceState.DISPATCHED_TO_INTERVENTION]
+    def get_dispatched_to_intervention_units(self, event=None):
+        if event:
+            return self._units_by_event[event][ResourceState.DISPATCHED_TO_INTERVENTION]
+        else:
+            return self._units[ResourceState.DISPATCHED_TO_INTERVENTION]
+
+    def get_dispatched_ambulances(self, event=None):
+        if event:
+            return self._ambulances_by_event[event][ResourceState.DISPATCHED]
+        else:
+            return self._units[ResourceState.DISPATCHED]
 
     def set_ambulance_state(self, ambulance, state, event):
         self._remove_from_other_states(ambulance, self._ambulances, self._ambulances_by_event)

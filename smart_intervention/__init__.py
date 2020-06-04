@@ -19,7 +19,8 @@ city_graph = graphs.gnp_directed_graph(nodes, .2)
 Notifications = NotificationStore()
 CityMap = Map(city_graph)
 SimulationVariables = {
-    SimulationVariableType.GUNFIGHT_BREAKOUT_RATE: 0.3
+    SimulationVariableType.GUNFIGHT_BREAKOUT_RATE: 0.3,
+    SimulationVariableType.REDUNDANCY_OF_MANPOWER: 0.1,
 }
 
 
