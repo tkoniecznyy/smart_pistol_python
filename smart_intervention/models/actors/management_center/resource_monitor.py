@@ -10,6 +10,7 @@ class ResourceState(Enum):
     DISPATCHED_TO_INTERVENTION = 'dispatched_to_intervention'
     AVAILABLE = 'available'
     UNAVAILABLE = 'unavailable'
+    REQUESTED = 'requested'
 
 
 class ManagementCenterResourceMonitor:
@@ -28,7 +29,7 @@ class ManagementCenterResourceMonitor:
             ResourceState.INTERVENTION: [],
         }
         self._ambulances_by_event = defaultdict(
-            lambda: {ResourceState.UNAVAILABLE: False}
+            lambda: {ResourceState.UNAVAILABLE: False, ResourceState.REQUESTED: False}
         )
 
     def set_unit_state(self, unit, state, event=None):
@@ -51,8 +52,14 @@ class ManagementCenterResourceMonitor:
     def set_ambulances_unavailable(self, event):
         self._ambulances_by_event[event][ResourceState.UNAVAILABLE] = True
 
+    def set_ambulance_requested(self, event):
+        self._ambulances_by_event[event][ResourceState.REQUESTED] = True
+
     def ambulances_available(self, event):
         return not self._ambulances_by_event[event][ResourceState.UNAVAILABLE]
+
+    def ambulance_requested(self, event):
+        return self._ambulances_by_event[event][ResourceState.REQUESTED]
 
     def _set_state(self, actor, state, event, by_state, by_event):
         by_state[state].append(actor)

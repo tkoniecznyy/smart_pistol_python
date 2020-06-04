@@ -24,7 +24,7 @@ class ManagementCenter(BaseActor):
 
         def action():
             ManagementCenterNotificationProcessor(self).process(processable_notifications)
-            self._process_interventions()
+            self._process_interventions(CityMap.get_interventions())
 
         return action
 
@@ -49,32 +49,30 @@ class ManagementCenter(BaseActor):
                 self._send_policemen_backup(event)
 
     def _send_policemen_backup(self, event):
+        # TODO: Logging mechanism
         missing_efficiency = event.missing_efficiency
         policemen = []
+        # First - take policemen which are available
         available_policemen = self._resource_monitor.get_available_units()
         missing_efficiency = self._take_close_policemen(
             missing_efficiency, event.location, available_policemen, policemen
         )
 
         if missing_efficiency > 0:
+            # Then - take policemen which are dispatched to intervention
             dispatched_policemen = self._resource_monitor.get_dispatched_to_intervention_units()
             missing_efficiency = self._take_close_policemen(
                 missing_efficiency, event.location, dispatched_policemen, policemen
             )
-
+            self._dispatch_ambulance(event)
             if missing_efficiency > 0:
+                # Last resort - take policemen which are intervening
                 intervening_policemen = self._resource_monitor.get_intervening_units()
                 self._take_close_policemen(
                     missing_efficiency, event.location, intervening_policemen, policemen
                 )
         for policeman in policemen:
-            Notifications.send(
-                ManagementCenterNotification.DISPATCH_TO_GUNFIGHT, self,
-                payload={
-                    'location': event.location,
-                    'policeman': policeman
-                }
-            )
+            self._dispatch_to_gunfight(policeman, event)
 
     def _take_close_policemen(self, missing_efficiency, location, policemen_pool, policemen_to_take):
         policemen = self._sort_closest(policemen_pool, location)
@@ -94,5 +92,52 @@ class ManagementCenter(BaseActor):
         sorted_policemen = [tpl[1] for tpl in policemen_distances]
         return sorted_policemen[:k]
 
-    def _process_interventions(self):
-        raise NotImplementedError  # TODO: Implement
+    def _process_interventions(self, interventions):
+        for intervention in interventions:
+            if not intervention.backup_sufficient:
+                send_policemen = []
+                available_policemen = self._resource_monitor.get_available_units()
+                self._take_close_policemen(
+                    intervention.missing_efficiency, intervention.location, available_policemen, send_policemen
+                )
+                for policeman in send_policemen:
+                    self._dispatch_to_intervention(policeman, intervention)
+
+    def _dispatch_to_intervention(self, unit, intervention):
+        self._dispatch_unit(
+            unit, intervention,
+            ManagementCenterNotification.DISPATCH_TO_INTERVENTION,
+            ResourceState.DISPATCHED_TO_INTERVENTION,
+        )
+
+    def _dispatch_to_gunfight(self, unit, intervention):
+        self._dispatch_unit(
+            unit, intervention,
+            ResourceState.DISPATCHED_TO_GUNFIGHT,
+            ManagementCenterNotification.DISPATCH_TO_GUNFIGHT,
+        )
+
+    def _dispatch_unit(self, unit, event, notification_type, resource_state):
+        self._resource_monitor.set_unit_state(unit, resource_state)
+        Notifications.send(
+            notification_type, self,
+            payload={
+                'location': event.location,
+                'policeman': unit
+            }
+        )
+
+    def _dispatch_ambulance(self, event):
+
+        requested_ambulance_for_event = self._resource_monitor.ambulance_requested(event)
+        ambulances_available_for_event = self._resource_monitor.ambulances_available(event)
+        # Omit action when ambulances are not available - response has been received
+        # Or when already requested for that event
+        if ambulances_available_for_event and not requested_ambulance_for_event:
+            Notifications.send(
+                ManagementCenterNotification.REQUEST_AMBULANCE_ASSISTANCE, self,
+                payload={
+                    'location': event.location
+                }
+            )
+            self._resource_monitor.set_ambulance_requested(event)

@@ -23,6 +23,8 @@ class SimulationManager:
         notifications = Notifications.flush()
         Notifications.clear()  # Super important, to have a clear store for each tick
         actions = [actor.tick_action(notifications) for actor in self.actors]
+        for action in actions:
+            action()
 
     def add_actor(self, actor: BaseActor):
         self.actors.append(actor)

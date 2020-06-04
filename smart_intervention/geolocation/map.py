@@ -30,3 +30,10 @@ class Map:
 
     def get_distance(self, a, b):
         return nx.shortest_path_length(self.graph, a, b)
+
+    def get_interventions(self):
+        return [
+            node.intervention_event
+            for node in self.graph.nodes
+            if node.intervention_event is not None
+        ]
