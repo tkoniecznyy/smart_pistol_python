@@ -1,4 +1,5 @@
 import dataclasses as dc
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 
@@ -48,8 +49,8 @@ class Notification:
 
 class Notifications:
 
-    def __init__(self):
-        self._notification_list = []
+    def __init__(self, notification_list=None):
+        self._notification_list = notification_list or []
         self._cache = []
 
     def add(self, notification):
@@ -66,4 +67,12 @@ class Notifications:
         self._notification_list = []
 
     def get_notifications_for_processing(self, requester):
-        return [notification for notification in self._notification_list if notification.processed_by(requester)]
+        return Notifications([
+            notification for notification in self._notification_list if notification.processed_by(requester)
+        ])
+
+    def by_type(self):
+        notifications_by_type = defaultdict(list)
+        for notification in self._notification_list:
+            notifications_by_type[notification.type].append(notification)
+        return notifications_by_type

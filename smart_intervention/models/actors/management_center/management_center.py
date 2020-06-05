@@ -7,11 +7,15 @@ from smart_intervention.models.actors.management_center.management_center_notifi
     ManagementCenterNotification
 from smart_intervention.models.actors.management_center.management_center_notification_processor import \
     ManagementCenterNotificationProcessor
-from smart_intervention.models.actors.management_center.resource_monitor import (
+from smart_intervention.models.actors.management_center.management_center_resource_monitor import (
     ManagementCenterResourceMonitor,
     ResourceState,
 )
 
+
+# TODO: Add a event finished signal and process it from management center
+# This would be a case of event cancellation or it being not-active anymore
+# Can make other precautions instead
 
 class ManagementCenter(BaseActor):
 

@@ -9,7 +9,7 @@ class ManagementCenterNotificationProcessor:
         self._management_center = management_center
 
     def process(self, notifications):
-        notifications_by_type = self._notifications_by_type(notifications)
+        notifications_by_type = self._filter_processable(notifications.by_type())
 
         # Policeman notifications processing
         self._process_returning_to_duty_notifications(notifications_by_type[PolicemanNotification.RETURNING_TO_DUTY])
@@ -26,18 +26,20 @@ class ManagementCenterNotificationProcessor:
         )
 
     @staticmethod
-    def _notifications_by_type(notifications):
-        notifications_by_type = {
-            PolicemanNotification.BACKUP_NEEDED: [],
-            PolicemanNotification.GUNFIGHT: [],
-            PolicemanNotification.INTERVENTION: [],
-            PolicemanNotification.RETURNING_TO_DUTY: [],
-            AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_REJECTED: [],
-            AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_ACCEPTED: [],
+    def _filter_processable(notifications_by_type):
+        processable_types = [
+            PolicemanNotification.BACKUP_NEEDED,
+            PolicemanNotification.GUNFIGHT,
+            PolicemanNotification.INTERVENTION,
+            PolicemanNotification.RETURNING_TO_DUTY,
+            AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_REJECTED,
+            AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_ACCEPTED,
+        ]
+        return {
+            notification_type: values
+            for notification_type, values in notifications_by_type.items()
+            if notification_type in processable_types
         }
-        for notification in notifications:
-            notifications_by_type[notification.type].append(notification)
-        return notifications_by_type
 
     def _process_backup_needed_notifications(self, notifications):
         # TODO: Store messages in analytic model and observe redundancy in signal sending

@@ -16,7 +16,7 @@ NODE_COUNT = 10
 
 nodes = generate_n(lambda _: Location(), n=NODE_COUNT)
 city_graph = graphs.gnp_directed_graph(nodes, .2)
-Notifications = NotificationStore()
+Notifications = NotificationStore()  # TODO: Rename that. This collides with notifications passed around as objects
 CityMap = Map(city_graph)
 SimulationVariables = {
     SimulationVariableType.GUNFIGHT_BREAKOUT_RATE: 0.3,
