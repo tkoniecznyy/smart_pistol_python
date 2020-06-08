@@ -26,7 +26,11 @@ class InterventionEvent:
             # We re-set event's health to initial health increased with contextual danger
             self.event_health = self._initial_health + (self._initial_health * self.danger_contexted)
         else:
-            self.event_health -= actor.efficiency  # Simple 1-1
+            if actor.__class__ is Policeman:
+                self.event_health -= actor.efficiency  # Simple 1-1
+            elif actor.__class__ is Ambulance:
+                seq = self._actors_by_type[Ambulance].index(actor)
+                self.event_health -= actor.efficiency * (1 / (2 ** seq))  # Subtract by the formula
 
     def join(self, actor):
         # TODO: Log it

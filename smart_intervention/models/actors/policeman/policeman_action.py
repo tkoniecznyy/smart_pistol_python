@@ -9,7 +9,7 @@ def return_to_duty_if_inactive(callback):
         if self._policeman.intervention_event.active:
             callback(self, *args, **kwargs)
         else:
-            self._return_to_duty()
+            self._policeman.return_to_duty()
 
     return decorated
 
@@ -60,8 +60,8 @@ class PolicemanAction(Action):
         else:
             notification_type = PolicemanNotification.GUNFIGHT
 
-        policeman.send_notification_with_location(notification_type=notification_type)
         policeman.intervention_event.mitigate(policeman)
+        policeman.send_notification_with_location(notification_type=notification_type)
 
     def _routing_actions(self):
         policeman = self._policeman
