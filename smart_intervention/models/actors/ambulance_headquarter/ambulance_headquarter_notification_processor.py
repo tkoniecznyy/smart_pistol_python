@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from smart_intervention.globals import Notifications
 from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
@@ -28,11 +30,11 @@ class AmbulanceHeadquarterNotificationProcessor:
             ManagementCenterNotification.REQUEST_AMBULANCE_ASSISTANCE,
             AmbulanceNotification.RETURNING_TO_HQ,
         ]
-        return {
+        return defaultdict(list, {
             notification_type: values
             for notification_type, values in notifications_by_type.items()
             if notification_type in processable_types
-        }
+        })
 
     @mass_process
     def _process_assistance_requests(self, notifications):

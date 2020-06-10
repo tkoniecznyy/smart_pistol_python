@@ -78,3 +78,6 @@ class Notifications:
         for notification in self._notification_list:
             notifications_by_type[notification.type].append(notification)
         return notifications_by_type
+
+    def get(self):
+        return self._notification_list

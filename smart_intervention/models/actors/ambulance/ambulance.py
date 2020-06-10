@@ -34,6 +34,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
     def tick_action(self, notifications) -> Callable:
         def action():
             processable_notifications = notifications.get_notifications_for_processing(self)
+            processable_notifications = processable_notifications.get()
             processable_notifications = [
                 notification for notification in processable_notifications
                 if notification.payload['ambulance'] == self
@@ -61,7 +62,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
 
     def _take_action(self):
         {
-            Ambulance.AmbulancePurpose.IDLE: lambda _: None,
+            Ambulance.AmbulancePurpose.IDLE: lambda: None,
             Ambulance.AmbulancePurpose.ROUTING_TO_ASSIST: self._routing_actions,
             Ambulance.AmbulancePurpose.ASSISTING: self._assisting_actions,
             Ambulance.AmbulancePurpose.ROUTING_TO_HQ: self._routing_actions,

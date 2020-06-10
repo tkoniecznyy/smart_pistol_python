@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
     AmbulanceHeadquarterNotification
 from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
@@ -35,11 +37,12 @@ class ManagementCenterNotificationProcessor:
             AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_REJECTED,
             AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_ACCEPTED,
         ]
-        return {
+
+        return defaultdict(list, {
             notification_type: values
             for notification_type, values in notifications_by_type.items()
             if notification_type in processable_types
-        }
+        })
 
     def _process_backup_needed_notifications(self, notifications):
         # TODO: Store messages in analytic model and observe redundancy in signal sending

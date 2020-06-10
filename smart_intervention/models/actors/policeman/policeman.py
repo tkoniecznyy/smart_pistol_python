@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Callable
 
 from smart_intervention.globals import Notifications, CityMap
@@ -40,6 +39,7 @@ class Policeman(PurposefulActor, GeolocatedActor):
     def tick_action(self, notifications) -> Callable:
         def action():
             processable_notifications = notifications.get_notifications_for_processing(self)
+            processable_notifications = processable_notifications.get()
             processable_notifications = [
                 notification for notification in processable_notifications
                 if notification.payload['policeman'] == self
@@ -51,9 +51,9 @@ class Policeman(PurposefulActor, GeolocatedActor):
 
     def _store_purpose(self, purpose):
         arrived_at_intervention = purpose in [
-            Policeman.PolicemanPurpose.INTERVENTION,
-            Policeman.PolicemanPurpose.GUNFIGHT
-        ] and self._last_purpose is Policeman.PolicemanPurpose.ROUTING
+            PolicemanPurpose.INTERVENTION,
+            PolicemanPurpose.GUNFIGHT
+        ] and self._last_purpose is PolicemanPurpose.ROUTING
         if not arrived_at_intervention:
             self._last_purpose = self.purpose
             self._last_location = self.location
@@ -72,16 +72,16 @@ class Policeman(PurposefulActor, GeolocatedActor):
             intervention_event.join(self)
 
             if intervention_event.armed_combat:
-                self.re_purpose(Policeman.PolicemanPurpose.GUNFIGHT)
+                self.re_purpose(PolicemanPurpose.GUNFIGHT)
             else:
-                self.re_purpose(Policeman.PolicemanPurpose.INTERVENTION)
+                self.re_purpose(PolicemanPurpose.INTERVENTION)
         else:
             raise PolicemanError('No event in given location')
 
     def return_to_duty(self):
-        if self._last_purpose is Policeman.PolicemanPurpose.PATROL:
-            self.re_purpose(Policeman.PolicemanPurpose.PATROL)
-        elif self._last_purpose is Policeman.PolicemanPurpose.IDLE:
+        if self._last_purpose is PolicemanPurpose.PATROL:
+            self.re_purpose(PolicemanPurpose.PATROL)
+        elif self._last_purpose is PolicemanPurpose.IDLE:
             self._route_to(CityMap.route(self.location, self._last_location))
         self.send_notification(notification_type=PolicemanNotification.RETURNING_TO_DUTY)
 
