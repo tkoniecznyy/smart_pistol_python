@@ -30,7 +30,7 @@ class ManagementCenter(BaseActor):
             interventions = CityMap.get_interventions()
             not_gunfight_interventions = [
                 intervention for intervention in interventions
-                if not intervention.armed_combat
+                if not intervention.armed_combat and intervention.is_active
             ]
             self._process_interventions(not_gunfight_interventions)
 
