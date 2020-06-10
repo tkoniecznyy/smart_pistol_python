@@ -1,5 +1,7 @@
 __version__ = '0.1.0'
 
+import logging
+
 from smart_intervention.models.actors.policeman.policeman_purpose import PolicemanPurpose
 from smart_intervention.models.simulation_manager import SimulationManager
 from smart_intervention.utils.iter_utils import pick_random, generate_n
@@ -8,6 +10,8 @@ from random import random
 POLICEMEN_COUNT = 10
 AMBULANCES_COUNT = 3
 COMMAND_INSTRUCTION = 'Loop stopped, please enter command: s => step, exit => terminate program'
+
+logging.basicConfig(format='%(name):%(levelname)s\t%(message)s', level=logging.DEBUG)
 
 
 def generate_environment_and_actors():

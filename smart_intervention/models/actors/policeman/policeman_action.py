@@ -42,6 +42,7 @@ class PolicemanAction(Action):
             policeman.current_route = policeman.patrol_route.copy()
 
         policeman.move_forward(policeman.current_route)
+        policeman.log.info(f'Moved forward on patrol route to {policeman.location}')
 
     @return_to_duty_if_inactive
     def _intervention_actions(self):
@@ -50,6 +51,7 @@ class PolicemanAction(Action):
             policeman.re_purpose(PolicemanPurpose.GUNFIGHT)
         else:
             policeman.intervention_event.mitigate(policeman)
+            policeman.log.info(f'Mitigating intervention {policeman.intervention_event}')
             policeman.send_notification(notification_type=PolicemanNotification.INTERVENTION)
 
     @return_to_duty_if_inactive
@@ -61,12 +63,13 @@ class PolicemanAction(Action):
             notification_type = PolicemanNotification.GUNFIGHT
 
         policeman.intervention_event.mitigate(policeman)
+        policeman.log.info(f'Mitigating gunfight {policeman.intervention_event}')
         policeman.send_notification_with_location(notification_type=notification_type)
 
     def _routing_actions(self):
         policeman = self._policeman
         try:
             policeman.move_and_join_event()
-        except Exception as err:
-            print(err)  # TODO: logging mechanism
+        except Exception:
+            policeman.log.exception('Route has ended but no event was found!')
             policeman.re_purpose(PolicemanPurpose.IDLE)

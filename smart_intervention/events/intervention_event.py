@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from functools import reduce
 from smart_intervention.simulation_variable_type import SimulationVariableType
@@ -22,10 +23,11 @@ class InterventionEvent:
 
         self.event_health = event_health
         self.armed_combat = False
+        self.log = logging.getLogger(f'InterventionEvent#{id(self)}')
 
     def mitigate(self, actor):
         if random_decision(SimulationVariables[SimulationVariableType.GUNFIGHT_BREAKOUT_RATE]):
-            # TODO: Log it
+            self.log.info('Intervention has broken out into gunfight')
             self.armed_combat = True
             # We re-set event's health to initial health increased with contextual danger
             self.event_health = self._initial_health + (self._initial_health * self.danger_contexted)
@@ -37,7 +39,7 @@ class InterventionEvent:
                 self.event_health -= actor.efficiency * (1 / (2 ** seq))  # Subtract by the formula
 
     def join(self, actor):
-        # TODO: Log it
+        self.log.info(f'Actor {actor} has joined the intervention')
         self._actors_by_type[actor.__class__].append(actor)
 
     def active(self):
