@@ -1,6 +1,6 @@
 from typing import List
 from smart_intervention.models.actors.bases.base_actor import BaseActor
-from smart_intervention import Notifications
+from smart_intervention.globals import Notifications
 
 
 class SimulationManager:

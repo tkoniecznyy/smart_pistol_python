@@ -1,8 +1,12 @@
 from collections import defaultdict
 from functools import reduce
-from smart_intervention import SimulationVariables, SimulationVariableType, Policeman
+from smart_intervention.simulation_variable_type import SimulationVariableType
+from smart_intervention.globals import SimulationVariables
 from smart_intervention.models.actors.ambulance.ambulance import Ambulance
+from smart_intervention.models.actors.policeman.policeman import Policeman
 from smart_intervention.utils.random import random_decision
+
+POLICEMAN = 'Policeman'
 
 
 class InterventionEvent:

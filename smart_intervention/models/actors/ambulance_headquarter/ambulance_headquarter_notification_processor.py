@@ -1,4 +1,4 @@
-from smart_intervention import Notifications
+from smart_intervention.globals import Notifications
 from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
     AmbulanceHeadquarterNotification

@@ -1,6 +1,6 @@
 from abc import ABC
 from typing import List
-from smart_intervention import CityMap
+from smart_intervention.globals import CityMap
 from smart_intervention.geolocation.map import RoutingError
 
 

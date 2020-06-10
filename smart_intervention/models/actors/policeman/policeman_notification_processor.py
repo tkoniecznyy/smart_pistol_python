@@ -1,6 +1,6 @@
 from smart_intervention.models.actors.management_center.management_center_notification import \
     ManagementCenterNotification
-from smart_intervention.models.actors.policeman.policeman import Policeman, PolicemanError
+from smart_intervention.models.actors.policeman.policeman_purpose import PolicemanPurpose
 
 
 class PolicemanNotificationProcessor:
@@ -30,21 +30,22 @@ class PolicemanNotificationProcessor:
             return lambda: self._dismiss_from_call()
 
     def _dispatch_to_intervention(self, location):
-        self._policeman.route_with_purpose(location, Policeman.PolicemanPurpose.ROUTING_TO_INTERVENTION)
+        self._policeman.route_with_purpose(location, PolicemanPurpose.ROUTING_TO_INTERVENTION)
 
     def _dispatch_to_gunfight(self, location):
-        self._policeman.route_with_purpose(location, Policeman.PolicemanPurpose.ROUTING_TO_GUNFIGHT)
+        self._policeman.route_with_purpose(location, PolicemanPurpose.ROUTING_TO_GUNFIGHT)
 
     def _dispatch_to_patrol(self, route):
         policeman = self._policeman
         if policeman.purpose not in [
-            Policeman.PolicemanPurpose.GUNFIGHT,
-            Policeman.PolicemanPurpose.INTERVENTION,
+            PolicemanPurpose.GUNFIGHT,
+            PolicemanPurpose.INTERVENTION,
         ]:
             policeman._patrol_route = route
-            policeman.re_purpose(Policeman.PolicemanPurpose.PATROL)
+            policeman.re_purpose(PolicemanPurpose.PATROL)
         else:
-            raise PolicemanError(f'Cannot send a unit to patrol while its {policeman.purpose}')
+            raise Exception(
+                f'Cannot send a unit to patrol while its {policeman.purpose}')  # TODO: Make special exception
 
     def _dismiss_from_call(self):
         self._policeman.return_to_duty()

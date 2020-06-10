@@ -1,7 +1,7 @@
 from smart_intervention.models.actors.action import Action
-from smart_intervention.models.actors.policeman.policeman import Policeman, PolicemanError
 
 from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
+from smart_intervention.models.actors.policeman.policeman_purpose import PolicemanPurpose
 
 
 def return_to_duty_if_inactive(callback):
@@ -15,7 +15,7 @@ def return_to_duty_if_inactive(callback):
 
 
 class PolicemanAction(Action):
-    def __init__(self, policeman: Policeman):
+    def __init__(self, policeman):
         self._policeman = policeman
 
         self._after_init()
@@ -28,12 +28,12 @@ class PolicemanAction(Action):
 
     def _get_action(self, purpose):
         return {
-            Policeman.PolicemanPurpose.IDLE: lambda: None,
-            Policeman.PolicemanPurpose.PATROL: self._patrol_actions,
-            Policeman.PolicemanPurpose.INTERVENTION: self._intervention_actions,
-            Policeman.PolicemanPurpose.GUNFIGHT: self._gunfight_actions,
-            Policeman.PolicemanPurpose.ROUTING_TO_INTERVENTION: self._routing_actions,
-            Policeman.PolicemanPurpose.ROUTING_TO_GUNFIGHT: self._routing_actions,
+            PolicemanPurpose.IDLE: lambda: None,
+            PolicemanPurpose.PATROL: self._patrol_actions,
+            PolicemanPurpose.INTERVENTION: self._intervention_actions,
+            PolicemanPurpose.GUNFIGHT: self._gunfight_actions,
+            PolicemanPurpose.ROUTING_TO_INTERVENTION: self._routing_actions,
+            PolicemanPurpose.ROUTING_TO_GUNFIGHT: self._routing_actions,
         }[purpose]
 
     def _patrol_actions(self):
@@ -47,7 +47,7 @@ class PolicemanAction(Action):
     def _intervention_actions(self):
         policeman = self._policeman
         if policeman.intervention_event.armed_combat:
-            policeman.re_purpose(Policeman.PolicemanPurpose.GUNFIGHT)
+            policeman.re_purpose(PolicemanPurpose.GUNFIGHT)
         else:
             policeman.intervention_event.mitigate(policeman)
             policeman.send_notification(notification_type=PolicemanNotification.INTERVENTION)
@@ -67,6 +67,6 @@ class PolicemanAction(Action):
         policeman = self._policeman
         try:
             policeman.move_and_join_event()
-        except PolicemanError as p_err:
-            print(p_err)  # TODO: logging mechanism
-            policeman.re_purpose(Policeman.PolicemanPurpose.IDLE)
+        except Exception as err:
+            print(err)  # TODO: logging mechanism
+            policeman.re_purpose(PolicemanPurpose.IDLE)

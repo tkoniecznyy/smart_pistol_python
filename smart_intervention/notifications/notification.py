@@ -2,18 +2,7 @@ import dataclasses as dc
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-
-from smart_intervention.models.actors.ambulance.ambulance import Ambulance
-from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter import AmbulanceHeadquarter
 from smart_intervention.models.actors.bases import BaseActor
-from smart_intervention.models.actors.management_center.management_center import ManagementCenter
-from smart_intervention.models.actors.policeman.policeman import Policeman
-from smart_intervention.models.actors.management_center.management_center_notification import \
-    ManagementCenterNotification
-from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
-from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
-from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
-    AmbulanceHeadquarterNotification
 
 
 class NotificationType(Enum):
@@ -30,6 +19,19 @@ class Notification:
     payload: dict = dc.field(default_factory=dict)
 
     def processed_by(self, requester):
+        # FIXME: See if this nested import is solvable other way
+        from smart_intervention.models.actors.ambulance.ambulance import Ambulance
+        from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter import AmbulanceHeadquarter
+
+        from smart_intervention.models.actors.management_center.management_center import ManagementCenter
+        from smart_intervention.models.actors.policeman.policeman import Policeman
+        from smart_intervention.models.actors.management_center.management_center_notification import \
+            ManagementCenterNotification
+        from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
+        from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
+        from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
+            AmbulanceHeadquarterNotification
+
         relevant_types_for_requester = {
             ManagementCenter: [PolicemanNotification],
             Policeman: [ManagementCenterNotification],

@@ -1,8 +1,7 @@
 from typing import Callable
 
-from smart_intervention import Location
 from smart_intervention.geolocation.geolocated_actor import GeolocatedActor
-from smart_intervention.models.actors.bases.purpose import PassiveActorPurpose, Purpose
+from smart_intervention.geolocation.location import Location
 from smart_intervention.models.actors.bases.purposeful_actor import PurposefulActor
 
 
@@ -15,10 +14,11 @@ class Drone(PurposefulActor, GeolocatedActor):
     def tick_action(self, notifications) -> Callable:
         raise NotImplementedError  # TODO: Implement
 
-    def re_purpose(self, purpose: Purpose):
+    def re_purpose(self, purpose):
         raise NotImplementedError  # TODO: Implement
 
-    class DronePurpose(PassiveActorPurpose):
+    class DronePurpose:
+        IDLE = 'idle'
         IN_FLIGHT = 'in_flight'
 
     def __init__(self, purpose: DronePurpose, location: Location):

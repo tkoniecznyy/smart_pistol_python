@@ -1,6 +1,7 @@
 from typing import Callable
 
-from smart_intervention import CityMap, Notifications, SimulationVariables, SimulationVariableType
+from smart_intervention.simulation_variable_type import SimulationVariableType
+from smart_intervention.globals import Notifications, CityMap, SimulationVariables
 from smart_intervention.events.intervention_event import InterventionEvent
 from smart_intervention.models.actors.bases import BaseActor
 from smart_intervention.models.actors.management_center.management_center_notification import \

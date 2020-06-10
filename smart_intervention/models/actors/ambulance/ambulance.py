@@ -1,12 +1,13 @@
+from enum import Enum
 from typing import Callable
 
-from smart_intervention import Location, CityMap, Notifications
+from smart_intervention.geolocation.location import Location
+from smart_intervention.globals import Notifications, CityMap
 from smart_intervention.geolocation.geolocated_actor import GeolocatedActor
 from smart_intervention.geolocation.map import RoutingError
 from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
     AmbulanceHeadquarterNotification
-from smart_intervention.models.actors.bases.purpose import AssistingActorPurpose, Purpose
 from smart_intervention.models.actors.bases.purposeful_actor import PurposefulActor
 from smart_intervention.utils.processing import mass_process
 
@@ -16,8 +17,11 @@ class AmbulanceError(Exception):
 
 
 class Ambulance(PurposefulActor, GeolocatedActor):
-    class AmbulancePurpose(AssistingActorPurpose):
-        pass
+    class AmbulancePurpose(Enum):
+        IDLE = 'idle'
+        ROUTING_TO_ASSIST = 'routing_to_assist'
+        ASSISTING = 'assisting'
+        ROUTING_TO_HQ = 'routing_to_hq'
 
     def __init__(self, purpose: AmbulancePurpose, location: Location, efficiency, ambulance_hq: Location):
         super().__init__(purpose)

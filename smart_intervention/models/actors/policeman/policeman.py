@@ -1,14 +1,15 @@
+from enum import Enum
 from typing import Callable
 
-from smart_intervention import CityMap, Notifications
+from smart_intervention.globals import Notifications, CityMap
 from smart_intervention.geolocation.geolocated_actor import GeolocatedActor
 from smart_intervention.geolocation.location import Location
 from smart_intervention.geolocation.map import RoutingError
-from smart_intervention.models.actors.bases.purpose import PassiveActorPurpose
 from smart_intervention.models.actors.bases.purposeful_actor import PurposefulActor
 from smart_intervention.models.actors.policeman.policeman_action import PolicemanAction
 from smart_intervention.models.actors.policeman.policeman_notification import PolicemanNotification
 from smart_intervention.models.actors.policeman.policeman_notification_processor import PolicemanNotificationProcessor
+from smart_intervention.models.actors.policeman.policeman_purpose import PolicemanPurpose
 
 
 class PolicemanError(Exception):
@@ -21,16 +22,6 @@ class Policeman(PurposefulActor, GeolocatedActor):
     Can dispatch messages to simulation manager for requesting of assistance in intervention
     Is geolocated and capable of moving around the map for fulfilling its current purpose
     """
-
-    class PolicemanPurpose(PassiveActorPurpose):
-        """
-        Class for keeping policeman purposes
-        """
-        PATROL = 'patrol'
-        INTERVENTION = 'intervention'
-        GUNFIGHT = 'gunfight'
-        ROUTING_TO_INTERVENTION = 'routing_to_intervention'
-        ROUTING_TO_GUNFIGHT = 'routing_to_combat'
 
     def __init__(self, purpose: PolicemanPurpose, location: Location, efficiency):
         super().__init__(purpose)

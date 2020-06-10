@@ -1,6 +1,6 @@
 from typing import Callable
 
-from smart_intervention import CityMap, Notifications
+from smart_intervention.globals import Notifications, CityMap
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
     AmbulanceHeadquarterNotification
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification_processor import \
