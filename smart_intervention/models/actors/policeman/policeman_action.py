@@ -44,7 +44,7 @@ class PolicemanAction(Action):
             policeman.current_route = policeman.patrol_route.copy()
 
         policeman.move_forward(policeman.current_route)
-        policeman.log.info(f'Moved forward on patrol route to {policeman.location}')
+        policeman.log.info('Patrolling...')
 
     @return_to_duty_if_inactive
     def _intervention_actions(self):

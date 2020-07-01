@@ -23,11 +23,12 @@ class Policeman(PurposefulActor, GeolocatedActor):
     Is geolocated and capable of moving around the map for fulfilling its current purpose
     """
 
-    def __init__(self, purpose: PolicemanPurpose, location: Location, efficiency):
+    def __init__(self, purpose: PolicemanPurpose, location: Location, efficiency, policeman_hq):
         super().__init__(purpose)
         super(PurposefulActor, self).__init__(location)
         self._last_purpose = purpose
         self.efficiency = efficiency
+        self.policeman_hq = policeman_hq
 
         self.current_route = None
         self.patrol_route = None
@@ -55,7 +56,6 @@ class Policeman(PurposefulActor, GeolocatedActor):
     def _store_duty_purpose(self):
         if self.purpose in [PolicemanPurpose.IDLE, PolicemanPurpose.PATROL]:
             self._last_purpose = self.purpose
-            self._last_location = self.location
 
     def _route_to(self, route):
         self.log.debug(f'Routing to {id(route[-1])}')
@@ -85,7 +85,7 @@ class Policeman(PurposefulActor, GeolocatedActor):
         if self._last_purpose is PolicemanPurpose.PATROL:
             self.re_purpose(PolicemanPurpose.PATROL)
         elif self._last_purpose is PolicemanPurpose.IDLE:
-            self.route_with_purpose(self._last_location, PolicemanPurpose.RETURNING_TO_HQ)
+            self.route_with_purpose(self.policeman_hq, PolicemanPurpose.RETURNING_TO_HQ)
         self.send_notification(notification_type=PolicemanNotification.RETURNING_TO_DUTY)
 
     def move_and_join_event(self):
@@ -106,3 +106,6 @@ class Policeman(PurposefulActor, GeolocatedActor):
         self.send_notification(
             notification_type=notification_type, payload={'location': self.location}
         )
+
+    def is_free(self):
+        return self.purpose in [PolicemanPurpose.IDLE, PolicemanPurpose.PATROL]

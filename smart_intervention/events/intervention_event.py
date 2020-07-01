@@ -15,6 +15,8 @@ class InterventionEvent:
         :param event_health:  Positive integer, indicating how much time will this intervention consume
         """
         self._danger = danger
+        if location.intervention_event:
+            raise RuntimeError('No 2 events in the same locations are allowed!')
         self.location = location
         self._initial_health = event_health
         self._actors_by_type = defaultdict(list)

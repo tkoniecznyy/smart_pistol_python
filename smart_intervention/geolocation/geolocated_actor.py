@@ -26,14 +26,17 @@ class GeolocatedActor(ABC):
             raise RoutingError('Cannot move forward, empty route')
 
         if CityMap.are_neighbors(first_waypoint, self.location):
-            self.location.remove_actor(self)
-            self.location = first_waypoint
-            self.location.add_actor(self)
-            if hasattr(self, 'log'):
-                self.log.info(f'Moving to {id(first_waypoint)}')
+            self.move_to(first_waypoint)
         else:
             route_to_waypoint = CityMap.route(self.location, first_waypoint)
             try:
-                self.location = route_to_waypoint[0]
+                self.move_to(route_to_waypoint[0])
             except IndexError:
                 raise RoutingError('Cannot find route to waypoint')
+        if hasattr(self, 'log'):
+            self.log.info(f'Moving to {id(first_waypoint)}')
+
+    def move_to(self, location):
+        self.location.remove_actor(self)
+        self.location = location
+        self.location.add_actor(self)

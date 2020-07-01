@@ -1,5 +1,4 @@
 import logging
-from enum import Enum
 from typing import Callable
 
 from smart_intervention.geolocation.location import Location
@@ -7,6 +6,7 @@ from smart_intervention.globals import Notifications, CityMap
 from smart_intervention.geolocation.geolocated_actor import GeolocatedActor
 from smart_intervention.geolocation.map import RoutingError
 from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
+from smart_intervention.models.actors.ambulance.ambulance_purpose import AmbulancePurpose
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
     AmbulanceHeadquarterNotification
 from smart_intervention.models.actors.bases.purposeful_actor import PurposefulActor
@@ -18,12 +18,6 @@ class AmbulanceError(Exception):
 
 
 class Ambulance(PurposefulActor, GeolocatedActor):
-    class AmbulancePurpose(Enum):
-        IDLE = 'idle'
-        ROUTING_TO_ASSIST = 'routing_to_assist'
-        ASSISTING = 'assisting'
-        ROUTING_TO_HQ = 'routing_to_hq'
-
     def __init__(self, purpose: AmbulancePurpose, location: Location, efficiency, ambulance_hq: Location):
         super().__init__(purpose)
         super(PurposefulActor, self).__init__(location)
@@ -64,16 +58,16 @@ class Ambulance(PurposefulActor, GeolocatedActor):
         def process_one(notification):
             if notification.type == AmbulanceHeadquarterNotification.DISPATCH_TO_EVENT:
                 event_location = notification.payload['location']
-                self._route_with_purpose(event_location, Ambulance.AmbulancePurpose.ROUTING_TO_ASSIST)
+                self._route_with_purpose(event_location, AmbulancePurpose.ROUTING_TO_ASSIST)
 
         return notifications, process_one
 
     def _take_action(self):
         {
-            Ambulance.AmbulancePurpose.IDLE: lambda: None,
-            Ambulance.AmbulancePurpose.ROUTING_TO_ASSIST: self._routing_actions,
-            Ambulance.AmbulancePurpose.ASSISTING: self._assisting_actions,
-            Ambulance.AmbulancePurpose.ROUTING_TO_HQ: self._routing_actions,
+            AmbulancePurpose.IDLE: lambda: None,
+            AmbulancePurpose.ROUTING_TO_ASSIST: self._routing_actions,
+            AmbulancePurpose.ASSISTING: self._assisting_actions,
+            AmbulancePurpose.ROUTING_TO_HQ: self._routing_actions,
         }[self.purpose]()
 
     def move_and_join_event(self):
@@ -87,7 +81,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
         if intervention_event:
             self.intervention_event = intervention_event
             intervention_event.join(self)
-            self.re_purpose(Ambulance.AmbulancePurpose.ASSISTING)
+            self.re_purpose(AmbulancePurpose.ASSISTING)
             self.log.info(f'Joined intervention event {id(intervention_event)} to assist')
         else:
             raise AmbulanceError('No event in given location')
@@ -96,8 +90,8 @@ class Ambulance(PurposefulActor, GeolocatedActor):
         try:
             self.move_and_join_event()
         except AmbulanceError as a_err:  # This piece is used like a safeguard for routing to hq
-            if self.purpose is Ambulance.AmbulancePurpose.ROUTING_TO_HQ:
-                self.re_purpose(Ambulance.AmbulancePurpose.IDLE)
+            if self.purpose is AmbulancePurpose.ROUTING_TO_HQ:
+                self.re_purpose(AmbulancePurpose.IDLE)
             else:
                 raise a_err
 

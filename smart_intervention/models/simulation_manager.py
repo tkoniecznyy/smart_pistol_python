@@ -10,10 +10,12 @@ class SimulationManager:
     It also needs to give the user ability to pause actions at any given time
     """
 
-    def __init__(self, actors: List[BaseActor] = None):
+    def __init__(self, police_outposts, ambulance_hq, actors: List[BaseActor] = None):
         if not actors:
             actors = []
         self.actors = actors
+        self.police_outposts = police_outposts
+        self.ambulance_hq = ambulance_hq
 
     def do_tick(self):
         """
@@ -30,3 +32,6 @@ class SimulationManager:
 
     def add_actor(self, actor: BaseActor):
         self.actors.append(actor)
+
+    def get_policemen(self):
+        return [actor for actor in self.actors if actor.__class__.__name__ == 'Policeman']
