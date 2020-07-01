@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 
 from smart_intervention.globals import Notifications, CityMap
@@ -15,6 +16,7 @@ from smart_intervention.models.actors.bases import BaseActor
 class AmbulanceHeadquarter(BaseActor):
     def __init__(self, managed_ambulances):
         self._resource_monitor = AmbulanceHeadquarterResourceMonitor(managed_ambulances)
+        self.log = logging.getLogger(f'AmbulanceHeadquarter#{id(self)}')
 
     def tick_action(self, notifications) -> Callable:
         processable_notifications = notifications.get_notifications_for_processing(self)
@@ -49,6 +51,8 @@ class AmbulanceHeadquarter(BaseActor):
                     'ambulance': ambulance,
                 }
             )
+            self.log.debug(f'Sending available ambulance to event #{id(event)}')
             return ambulance
         else:
+            self.log.debug(f'No available ambulance found for event #{id(event)}')
             return False

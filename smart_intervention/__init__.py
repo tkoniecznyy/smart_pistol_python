@@ -9,9 +9,10 @@ from random import random
 
 POLICEMEN_COUNT = 10
 AMBULANCES_COUNT = 3
-COMMAND_INSTRUCTION = 'Loop stopped, please enter command: s => step, exit => terminate program'
+COMMAND_INSTRUCTION = 'Loop stopped, please enter command: s => step, exit => terminate program, ev => insert ' \
+                      'intervention event '
 
-logging.basicConfig(format='%(name):%(levelname)s\t%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(name)s:%(levelname)s\t%(message)s', level=logging.DEBUG)
 
 
 def generate_environment_and_actors():

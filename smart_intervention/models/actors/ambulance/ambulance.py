@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from typing import Callable
 
@@ -30,6 +31,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
         self.intervention_event = None
         self.ambulance_hq = ambulance_hq
         self.current_route = None
+        self.log = logging.getLogger(f'Ambulance#{id(self)}')
 
     def tick_action(self, notifications) -> Callable:
         def action():
@@ -38,13 +40,19 @@ class Ambulance(PurposefulActor, GeolocatedActor):
             processable_notifications = [
                 notification for notification in processable_notifications
                 if notification.payload['ambulance'] == self
-            ]  # Filter out notifications for other instances of policemen
+            ]  # Filter out notifications for other instances of ambulances
+            self.log.debug(f'Received {len(processable_notifications)} processable notifications')
             self._process_notifications(processable_notifications)
             self._take_action()
 
         return action
 
+    def re_purpose(self, purpose):
+        self.log.info(f'Changing purpose to #{purpose.value}')
+        super().re_purpose(purpose)
+
     def _route_to(self, route):
+        self.log.debug(f'Routing to {route[-1]}')
         self.current_route = route
 
     def _route_with_purpose(self, location, purpose):  # TODO: Refactor - abstract out to geolocated + purposeful actor
@@ -80,6 +88,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
             self.intervention_event = intervention_event
             intervention_event.join(self)
             self.re_purpose(Ambulance.AmbulancePurpose.ASSISTING)
+            self.log.info(f'Joined intervention event {id(intervention_event)} to assist')
         else:
             raise AmbulanceError('No event in given location')
 
@@ -101,6 +110,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
             self.send_notification(AmbulanceNotification.RETURNING_TO_HQ)
 
     def send_notification(self, notification_type, payload=None):
+        self.log.debug(f'Sending notification {notification_type.value}, payload: {payload}')
         Notifications.send(
             actor=self,
             notification_type=notification_type,

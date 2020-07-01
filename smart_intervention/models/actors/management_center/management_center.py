@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 
 from smart_intervention.simulation_variable_type import SimulationVariableType
@@ -22,6 +23,7 @@ class ManagementCenter(BaseActor):
 
     def __init__(self, managed_units):
         self._resource_monitor = ManagementCenterResourceMonitor(managed_units)
+        self.log = logging.getLogger(f'ManagementCenter#{id(self)}')
 
     def tick_action(self, notifications) -> Callable:
         processable_notifications = notifications.get_notifications_for_processing(self)
@@ -56,9 +58,10 @@ class ManagementCenter(BaseActor):
         if event.active:
             if not event.backup_sufficient:
                 self._send_policemen_backup(event)
+                self.log.info(f'Sending policemen to gunfight intervention {id(event)}')
 
     def _send_policemen_backup(self, event):
-        # TODO: Logging mechanism
+
         dispatched_efficiency = InterventionEvent.sum_ambulances_and_units_efficiency(
             self._resource_monitor.get_dispatched_ambulances(event=event),
             self._resource_monitor.get_dispatched_to_intervention_units(event=event)
@@ -68,6 +71,7 @@ class ManagementCenter(BaseActor):
         ])
         # Firstly check, if we even need more dispatched units
         if missing_efficiency > 0:
+            self.log.debug(f'Searching for available policemen for event {id(event)}')
             policemen = []
             # First - take policemen which are available
             available_policemen = self._resource_monitor.get_available_units()
@@ -76,6 +80,7 @@ class ManagementCenter(BaseActor):
             )
 
             if missing_efficiency > 0:
+                self.log.debug(f'Searching for policemen dispatched to intervention for event {id(event)}')
                 # Then - take policemen which are dispatched to intervention
                 dispatched_policemen = self._resource_monitor.get_dispatched_to_intervention_units()
                 missing_efficiency = self._take_close_policemen(
@@ -84,6 +89,7 @@ class ManagementCenter(BaseActor):
                 self._dispatch_ambulance(event)
 
                 if missing_efficiency > 0:
+                    self.log.debug(f'Searching for intervening policemen for event {id(event)}')
                     # Last resort - take policemen which are intervening
                     intervening_policemen = self._resource_monitor.get_intervening_units()
                     self._take_close_policemen(
@@ -121,6 +127,7 @@ class ManagementCenter(BaseActor):
                     self._dispatch_to_intervention(policeman, intervention)
 
     def _dispatch_to_intervention(self, unit, intervention):
+        self.log.debug(f'Dispatching policeman #{id(unit)} to intervention')
         self._dispatch_unit(
             unit, intervention,
             ManagementCenterNotification.DISPATCH_TO_INTERVENTION,
@@ -128,6 +135,7 @@ class ManagementCenter(BaseActor):
         )
 
     def _dispatch_to_gunfight(self, unit, intervention):
+        self.log.debug(f'Dispatching policeman #{id(unit)} to gunfight')
         self._dispatch_unit(
             unit, intervention,
             ResourceState.DISPATCHED_TO_GUNFIGHT,
@@ -150,6 +158,7 @@ class ManagementCenter(BaseActor):
         # Omit action when ambulances are not available - response has been received
         # Or when already requested for that event
         if ambulances_available_for_event and not requested_ambulance_for_event:
+            self.log.debug(f'Requesting ambulance assistance for event {id(event)}')
             Notifications.send(
                 ManagementCenterNotification.REQUEST_AMBULANCE_ASSISTANCE, self,
                 payload={

@@ -7,9 +7,6 @@ from smart_intervention.models.actors.ambulance.ambulance import Ambulance
 from smart_intervention.models.actors.policeman.policeman import Policeman
 from smart_intervention.utils.random import random_decision
 
-POLICEMAN = 'Policeman'
-
-
 class InterventionEvent:
     def __init__(self, danger, event_health, location):
         """
@@ -37,6 +34,9 @@ class InterventionEvent:
             elif actor.__class__ is Ambulance:
                 seq = self._actors_by_type[Ambulance].index(actor)
                 self.event_health -= actor.efficiency * (1 / (2 ** seq))  # Subtract by the formula
+
+            if hasattr(actor, 'log'):
+                actor.log.info(f'Actor {actor.__class_}#{id(actor)} has taken down event health to {self.event_health}')
 
     def join(self, actor):
         self.log.info(f'Actor {actor} has joined the intervention')

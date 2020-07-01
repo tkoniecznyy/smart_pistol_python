@@ -21,6 +21,8 @@ class GeolocatedActor(ABC):
         """
         try:
             first_waypoint = route.pop(0)
+            if hasattr(self, 'log'):
+                self.log.info(f'Moving to {first_waypoint}')
         except IndexError:
             raise RoutingError('Cannot move forward, empty route')
 
