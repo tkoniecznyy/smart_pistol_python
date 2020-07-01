@@ -11,3 +11,4 @@ class PolicemanPurpose(Enum):
     GUNFIGHT = 'gunfight'
     ROUTING_TO_INTERVENTION = 'routing_to_intervention'
     ROUTING_TO_GUNFIGHT = 'routing_to_combat'
+    RETURNING_TO_HQ = 'returning_to_hq'

@@ -112,8 +112,8 @@ class Ambulance(PurposefulActor, GeolocatedActor):
     def send_notification(self, notification_type, payload=None):
         self.log.debug(f'Sending notification {notification_type.value}, payload: {payload}')
         Notifications.send(
+            type=notification_type,
             actor=self,
-            notification_type=notification_type,
             payload=payload
         )
 

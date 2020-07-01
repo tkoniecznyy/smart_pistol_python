@@ -32,21 +32,21 @@ class Notification:
         from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
             AmbulanceHeadquarterNotification
 
-        relevant_types_for_requester = {
+        relevant_types_for_requester = defaultdict(list, {
             ManagementCenter: [PolicemanNotification],
             Policeman: [ManagementCenterNotification],
             AmbulanceHeadquarter: [AmbulanceNotification],
             Ambulance: [AmbulanceHeadquarterNotification],
-        }[requester.__class__]
+        })[requester.__class__]
 
-        relevant_instances_for_requester = {
+        relevant_instances_for_requester = defaultdict(list,{
             ManagementCenter: [
                 AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_ACCEPTED,
                 AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_REJECTED,
                 AmbulanceNotification.ASSISTING,
             ]
-        }[requester.__class__]
-        return self.__class__ in relevant_types_for_requester or self.type in relevant_instances_for_requester
+        })[requester.__class__]
+        return self.type.__class__ in relevant_types_for_requester or self.type in relevant_instances_for_requester
 
 
 class NotificationStore:

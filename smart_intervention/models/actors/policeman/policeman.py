@@ -35,13 +35,12 @@ class Policeman(PurposefulActor, GeolocatedActor):
         self.log = logging.getLogger(f'Policeman#{id(self)}')
 
     def re_purpose(self, purpose):
-        self._store_purpose(purpose)
+        self._store_duty_purpose()
         self.log.info(f'Changing purpose to #{purpose.value}')
         super().re_purpose(purpose)
 
     def tick_action(self, notifications) -> Callable:
         def action():
-            print(f'policeman #{id(self)} has access to: {notifications.get()}')
             processable_notifications = notifications.get_notifications_for_processing(self)
             processable_notifications = [
                 notification for notification in processable_notifications.get()
@@ -53,17 +52,13 @@ class Policeman(PurposefulActor, GeolocatedActor):
 
         return action
 
-    def _store_purpose(self, purpose):
-        arrived_at_intervention = purpose in [
-            PolicemanPurpose.INTERVENTION,
-            PolicemanPurpose.GUNFIGHT
-        ] and self._last_purpose is PolicemanPurpose.ROUTING
-        if not arrived_at_intervention:
+    def _store_duty_purpose(self):
+        if self.purpose in [PolicemanPurpose.IDLE, PolicemanPurpose.PATROL]:
             self._last_purpose = self.purpose
             self._last_location = self.location
 
     def _route_to(self, route):
-        self.log.debug(f'Routing to {route[-1]}')
+        self.log.debug(f'Routing to {id(route[-1])}')
         self.current_route = route
 
     def route_with_purpose(self, location, purpose):
@@ -90,7 +85,7 @@ class Policeman(PurposefulActor, GeolocatedActor):
         if self._last_purpose is PolicemanPurpose.PATROL:
             self.re_purpose(PolicemanPurpose.PATROL)
         elif self._last_purpose is PolicemanPurpose.IDLE:
-            self._route_to(CityMap.route(self.location, self._last_location))
+            self.route_with_purpose(self._last_location, PolicemanPurpose.RETURNING_TO_HQ)
         self.send_notification(notification_type=PolicemanNotification.RETURNING_TO_DUTY)
 
     def move_and_join_event(self):
@@ -102,8 +97,8 @@ class Policeman(PurposefulActor, GeolocatedActor):
     def send_notification(self, notification_type, payload=None):
         self.log.debug(f'Sending notification {notification_type.value}, payload: {payload}')
         Notifications.send(
-            actor=self,
-            notification_type=notification_type,
+            type=self,
+            actor=notification_type,
             payload=payload
         )
 

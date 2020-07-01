@@ -40,3 +40,6 @@ class Map:
 
     def get_locations(self):
         return list(self.graph.nodes)
+
+    def are_neighbors(self, a, b):
+        return b in self.graph.neighbors(a)

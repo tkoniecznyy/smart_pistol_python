@@ -11,6 +11,7 @@ class GeolocatedActor(ABC):
 
     def __init__(self, location):
         self.location = location
+        location.add_actor(self)
 
     def move_forward(self, route: List):
         """
@@ -21,8 +22,6 @@ class GeolocatedActor(ABC):
         """
         try:
             first_waypoint = route.pop(0)
-            if hasattr(self, 'log'):
-                self.log.info(f'Moving to {first_waypoint}')
         except IndexError:
             raise RoutingError('Cannot move forward, empty route')
 
@@ -30,6 +29,8 @@ class GeolocatedActor(ABC):
             self.location.remove_actor(self)
             self.location = first_waypoint
             self.location.add_actor(self)
+            if hasattr(self, 'log'):
+                self.log.info(f'Moving to {id(first_waypoint)}')
         else:
             route_to_waypoint = CityMap.route(self.location, first_waypoint)
             try:

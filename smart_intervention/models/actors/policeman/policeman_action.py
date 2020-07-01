@@ -6,7 +6,8 @@ from smart_intervention.models.actors.policeman.policeman_purpose import Policem
 
 def return_to_duty_if_inactive(callback):
     def decorated(self, *args, **kwargs):
-        if self._policeman.intervention_event.active:
+        event_in_location = self._policeman.location.intervention_event
+        if event_in_location and event_in_location.active:
             callback(self, *args, **kwargs)
         else:
             self._policeman.return_to_duty()
@@ -34,6 +35,7 @@ class PolicemanAction(Action):
             PolicemanPurpose.GUNFIGHT: self._gunfight_actions,
             PolicemanPurpose.ROUTING_TO_INTERVENTION: self._routing_actions,
             PolicemanPurpose.ROUTING_TO_GUNFIGHT: self._routing_actions,
+            PolicemanPurpose.RETURNING_TO_HQ: self._routing_actions
         }[purpose]
 
     def _patrol_actions(self):
@@ -51,7 +53,7 @@ class PolicemanAction(Action):
             policeman.re_purpose(PolicemanPurpose.GUNFIGHT)
         else:
             policeman.intervention_event.mitigate(policeman)
-            policeman.log.info(f'Mitigating intervention {policeman.intervention_event}')
+            policeman.log.info(f'Mitigating intervention {id(policeman.intervention_event)}')
             policeman.send_notification(notification_type=PolicemanNotification.INTERVENTION)
 
     @return_to_duty_if_inactive
@@ -63,7 +65,7 @@ class PolicemanAction(Action):
             notification_type = PolicemanNotification.GUNFIGHT
 
         policeman.intervention_event.mitigate(policeman)
-        policeman.log.info(f'Mitigating gunfight {policeman.intervention_event}')
+        policeman.log.info(f'Mitigating gunfight {id(policeman.intervention_event)}')
         policeman.send_notification_with_location(notification_type=notification_type)
 
     def _routing_actions(self):
@@ -71,5 +73,4 @@ class PolicemanAction(Action):
         try:
             policeman.move_and_join_event()
         except Exception:
-            policeman.log.exception('Route has ended but no event was found!')
             policeman.re_purpose(PolicemanPurpose.IDLE)

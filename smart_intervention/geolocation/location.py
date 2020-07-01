@@ -22,7 +22,7 @@ class Location:
         self.actors = self.actors + actors
 
     def add_actor(self, actor):
-        self.actors = self.actors.append(actor)
+        self.actors.append(actor)
 
     def remove_actor(self, actor):
         self.actors.remove(actor)
