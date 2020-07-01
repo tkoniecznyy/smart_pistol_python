@@ -19,6 +19,8 @@ from smart_intervention.models.actors.management_center.management_center_resour
 # This would be a case of event cancellation or it being not-active anymore
 # Can make other precautions instead
 
+# TODO: Fix double dispatching when intervention is transitioned to gunfight
+
 class ManagementCenter(BaseActor):
 
     def __init__(self, managed_units):
@@ -167,7 +169,7 @@ class ManagementCenter(BaseActor):
         # Omit action when ambulances are not available - response has been received
         # Or when already requested for that event
         if ambulances_available_for_event and not requested_ambulance_for_event:
-            self.log.debug(f'Requesting ambulance assistance for event {id(event)}')
+            self.log.info(f'Requesting ambulance assistance for event {id(event)}')
             Notifications.send(
                 ManagementCenterNotification.REQUEST_AMBULANCE_ASSISTANCE, self,
                 payload={

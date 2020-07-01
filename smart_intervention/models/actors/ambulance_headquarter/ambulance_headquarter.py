@@ -22,6 +22,7 @@ class AmbulanceHeadquarter(BaseActor):
         processable_notifications = notifications.get_notifications_for_processing(self)
 
         def action():
+            self.log.debug(f'Received {len(processable_notifications.get())} processable notifications')
             AmbulanceHeadquarterNotificationProcessor(self).process(processable_notifications)
 
         return action
@@ -45,14 +46,15 @@ class AmbulanceHeadquarter(BaseActor):
             ambulance = ambulances_by_proximity[0]
             self._resource_monitor.set_ambulance_state(ambulance, AmbulanceResourceState.BUSY)
             Notifications.send(
-                AmbulanceHeadquarterNotification.DISPATCH_TO_EVENT, self,
+                type=AmbulanceHeadquarterNotification.DISPATCH_TO_EVENT,
+                actor=self,
                 payload={
                     'location': event.location,
                     'ambulance': ambulance,
                 }
             )
-            self.log.debug(f'Sending available ambulance to event #{id(event)}')
+            self.log.info(f'Sending ambulance to event #{id(event)}')
             return ambulance
         else:
-            self.log.debug(f'No available ambulance found for event #{id(event)}')
+            self.log.info(f'No available ambulance found for event #{id(event)}')
             return False

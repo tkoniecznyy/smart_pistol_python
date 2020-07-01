@@ -46,7 +46,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
         super().re_purpose(purpose)
 
     def _route_to(self, route):
-        self.log.debug(f'Routing to {route[-1]}')
+        self.log.debug(f'Routing to {id(route[-1])}')
         self.current_route = route
 
     def _route_with_purpose(self, location, purpose):  # TODO: Refactor - abstract out to geolocated + purposeful actor

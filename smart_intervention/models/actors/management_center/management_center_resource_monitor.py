@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, Iterable
 from enum import Enum
 
 
@@ -87,6 +87,12 @@ class ManagementCenterResourceMonitor:
 
     @staticmethod
     def _filter_from_state_dict(state_dict, unit):
-        for state, units_in_state in state_dict.items():
+        state_dict_filtered = {
+            key: values
+            for key, values in state_dict.items()
+            if isinstance(values, Iterable)
+        }
+
+        for state, units_in_state in state_dict_filtered.items():
             if unit in units_in_state:
                 state_dict[state] = [unit_in_state for unit_in_state in units_in_state if unit_in_state != unit]

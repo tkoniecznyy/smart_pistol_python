@@ -75,7 +75,7 @@ class InterventionEvent:
     def sum_ambulances_efficiency(ambulances):
         # Each ambulance is half of the value of previous one, sorted by arrival
         return reduce(
-            lambda val, tpl: val + tpl[1] * (1 / (2 ** tpl[0])),
+            lambda val, tpl: val + tpl[1].efficiency * (1 / (2 ** tpl[0])),
             enumerate(ambulances, 1), 0
         )
 

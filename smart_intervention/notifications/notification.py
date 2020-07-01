@@ -38,7 +38,7 @@ class Notification:
             Ambulance: [AmbulanceHeadquarterNotification],
         })[requester.__class__]
 
-        relevant_instances_for_requester = defaultdict(list,{
+        relevant_instances_for_requester = defaultdict(list, {
             ManagementCenter: [
                 AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_ACCEPTED,
                 AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_REJECTED,
@@ -50,6 +50,9 @@ class Notification:
                 ManagementCenterNotification.DISPATCH_TO_PATROL,
                 ManagementCenterNotification.DISMISS_FROM_GUNFIGHT_CALL,
                 ManagementCenterNotification.DISMISS_FROM_INTERVENTION_CALL,
+            ],
+            AmbulanceHeadquarter: [
+                ManagementCenterNotification.REQUEST_AMBULANCE_ASSISTANCE
             ],
         })[requester.__class__]
         return self.type.__class__ in relevant_types_for_requester or self.type in relevant_instances_for_requester

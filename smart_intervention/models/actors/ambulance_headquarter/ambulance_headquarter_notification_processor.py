@@ -25,7 +25,6 @@ class AmbulanceHeadquarterNotificationProcessor:
 
     @staticmethod
     def _filter_processable(notifications_by_type):  # TODO: Refactor - generalize (extract to parent class)
-        # TODO: Add processing of return to duty from ambulance when implemented
         processable_types = [
             ManagementCenterNotification.REQUEST_AMBULANCE_ASSISTANCE,
             AmbulanceNotification.RETURNING_TO_HQ,
@@ -39,10 +38,11 @@ class AmbulanceHeadquarterNotificationProcessor:
     @mass_process
     def _process_assistance_requests(self, notifications):
         def process_one(notification):
-            event = notification.event
+            event = notification.payload['location'].intervention_event
 
             ambulance = self._ambulance_hq.dispatch_ambulance_to(event)
             if ambulance:
+                self._ambulance_hq.log.debug(f'Accepted a request for ambulance for event {id(event)}')
                 Notifications.send(
                     AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_ACCEPTED,
                     self,
@@ -52,6 +52,7 @@ class AmbulanceHeadquarterNotificationProcessor:
                     }
                 )
             else:
+                self._ambulance_hq.log.debug(f'Rejected a request for ambulance for event {id(event)}')
                 Notifications.send(
                     AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_REJECTED,
                     self,
