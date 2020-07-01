@@ -29,7 +29,7 @@ class ManagementCenterResourceMonitor:
             ResourceState.INTERVENTION: [],
         }
         self._ambulances_by_event = defaultdict(
-            lambda: {ResourceState.UNAVAILABLE: False, ResourceState.REQUESTED: False}
+            lambda: defaultdict(list, {ResourceState.UNAVAILABLE: False, ResourceState.REQUESTED: False})
         )
 
     def set_unit_state(self, unit, state, event=None):

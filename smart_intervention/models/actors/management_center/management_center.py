@@ -29,6 +29,7 @@ class ManagementCenter(BaseActor):
         processable_notifications = notifications.get_notifications_for_processing(self)
 
         def action():
+            self.log.debug(f'Received {len(processable_notifications.get())} processable notifications')
             ManagementCenterNotificationProcessor(self).process(processable_notifications)
             interventions = CityMap.get_interventions()
             not_gunfight_interventions = [
@@ -58,7 +59,6 @@ class ManagementCenter(BaseActor):
         if event.active:
             if not event.backup_sufficient:
                 self._send_policemen_backup(event)
-                self.log.info(f'Sending policemen to gunfight intervention {id(event)}')
 
     def _send_policemen_backup(self, event):
 
@@ -95,8 +95,12 @@ class ManagementCenter(BaseActor):
                     self._take_close_policemen(
                         missing_efficiency, event.location, intervening_policemen, policemen
                     )
-            for policeman in policemen:
-                self._dispatch_to_gunfight(policeman, event)
+            if policemen:
+                self.log.info(f'Sending policemen to gunfight intervention {id(event)}')
+                for policeman in policemen:
+                    self._dispatch_to_gunfight(policeman, event)
+            else:
+                self.log.info(f'No available units found to dispatch to gunfight {id(event)}')
 
     def _take_close_policemen(self, missing_efficiency, location, policemen_pool, policemen_to_take):
         policemen = self._by_proximity(policemen_pool, location)
@@ -117,7 +121,10 @@ class ManagementCenter(BaseActor):
 
     def _process_interventions(self, interventions):
         for intervention in interventions:
-            if not intervention.backup_sufficient:
+            dispatched_units = self._resource_monitor.get_dispatched_to_intervention_units(intervention)
+
+            if not intervention.dispatched_backup_sufficient(dispatched_units):
+                self.log.info(f'Seeking for backup for intervention event {id(intervention)}')
                 send_policemen = []
                 available_policemen = self._resource_monitor.get_available_units()
                 self._take_close_policemen(
@@ -125,9 +132,11 @@ class ManagementCenter(BaseActor):
                 )
                 for policeman in send_policemen:
                     self._dispatch_to_intervention(policeman, intervention)
+                if not send_policemen:
+                    self.log.info(f'No available units found to dispatch to intervention {id(intervention)}')
 
     def _dispatch_to_intervention(self, unit, intervention):
-        self.log.debug(f'Dispatching policeman #{id(unit)} to intervention')
+        self.log.info(f'Dispatching policeman #{id(unit)} to intervention')
         self._dispatch_unit(
             unit, intervention,
             ManagementCenterNotification.DISPATCH_TO_INTERVENTION,
@@ -135,11 +144,11 @@ class ManagementCenter(BaseActor):
         )
 
     def _dispatch_to_gunfight(self, unit, intervention):
-        self.log.debug(f'Dispatching policeman #{id(unit)} to gunfight')
+        self.log.info(f'Dispatching policeman #{id(unit)} to gunfight')
         self._dispatch_unit(
             unit, intervention,
-            ResourceState.DISPATCHED_TO_GUNFIGHT,
-            ManagementCenterNotification.DISPATCH_TO_GUNFIGHT,
+            resource_state=ResourceState.DISPATCHED_TO_GUNFIGHT,
+            notification_type=ManagementCenterNotification.DISPATCH_TO_GUNFIGHT,
         )
 
     def _dispatch_unit(self, unit, event, notification_type, resource_state):

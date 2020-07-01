@@ -51,14 +51,12 @@ class ManagementCenterNotificationProcessor:
 
     @staticmethod
     def _cluster_backup_needed_by_event(notifications):
-        clustered_notifications = {}
+        clustered_notifications = defaultdict(list)
 
         def process_one(notification):
             location = notification.payload['location']
             event = location.intervention_event
             if event.active:
-                if not clustered_notifications[event]:
-                    clustered_notifications[event] = []
                 clustered_notifications[event].append(notification)
             else:
                 # This is a no-op
@@ -85,7 +83,7 @@ class ManagementCenterNotificationProcessor:
         def process_one(notification):
             location = notification.payload['location']
             self._management_center.acknowledge_intervention(
-                location.get_intervention_event,
+                location.intervention_event,
                 notification.actor
             )
 

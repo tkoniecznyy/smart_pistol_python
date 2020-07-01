@@ -73,10 +73,8 @@ class Policeman(PurposefulActor, GeolocatedActor):
 
             if intervention_event.armed_combat:
                 self.re_purpose(PolicemanPurpose.GUNFIGHT)
-                self.log.info(f'Joined intervention-gunfight event {id(intervention_event)}')
             else:
                 self.re_purpose(PolicemanPurpose.INTERVENTION)
-                self.log.info(f'Joined intervention event {id(intervention_event)}')
         else:
             raise PolicemanError('No event in given location')
 
@@ -97,8 +95,8 @@ class Policeman(PurposefulActor, GeolocatedActor):
     def send_notification(self, notification_type, payload=None):
         self.log.debug(f'Sending notification {notification_type.value}, payload: {payload}')
         Notifications.send(
-            type=self,
-            actor=notification_type,
+            type=notification_type,
+            actor=self,
             payload=payload
         )
 

@@ -88,3 +88,6 @@ class InterventionEvent:
         return self.event_health - self.sum_ambulances_and_units_efficiency(
             self._actors_by_type[Policeman], self._actors_by_type[Ambulance]
         )
+
+    def dispatched_backup_sufficient(self, dispatched):
+        return self.missing_efficiency - self.sum_efficiency(dispatched) < 0

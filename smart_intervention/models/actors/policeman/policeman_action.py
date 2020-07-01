@@ -54,7 +54,7 @@ class PolicemanAction(Action):
         else:
             policeman.intervention_event.mitigate(policeman)
             policeman.log.info(f'Mitigating intervention {id(policeman.intervention_event)}')
-            policeman.send_notification(notification_type=PolicemanNotification.INTERVENTION)
+            policeman.send_notification_with_location(notification_type=PolicemanNotification.INTERVENTION)
 
     @return_to_duty_if_inactive
     def _gunfight_actions(self):
