@@ -37,3 +37,6 @@ class Map:
             for node in self.graph.nodes
             if node.intervention_event is not None
         ]
+
+    def get_locations(self):
+        return list(self.graph.nodes)
