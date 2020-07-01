@@ -57,26 +57,36 @@ def create_intervention():
     from smart_intervention.events.intervention_event import InterventionEvent
     locations = CityMap.get_locations()
     location_ids = [str(id(location)) for location in locations]
-    location_id = input(f'Pick a location from this list:\n{location_ids}')
-    if location_id not in location_ids:
-        print('ERROR: Invalid location chosen')
+
+    autogen = input('Do you want to autogen event? y/n')
+    if autogen == 'y':
+        danger = round(random(), 2)
+        health_index = round(random() * 10, 0)
+        location = pick_random(locations)
     else:
-        location = locations[location_ids.index(location_id)]
-        danger = input(
-            'Pick danger index (floating point 0-1), which indicates how likely the event is to break out into gunfight')
-        try:
-            danger = float(danger)
-        except ValueError:
-            print(f'Invalid value chosen as danger level!: {danger}')
+        location_id = input(f'Pick a location from this list:\n{location_ids}')
+        if location_id not in location_ids:
+            print('ERROR: Invalid location chosen')
+            return
+        else:
+            location = locations[location_ids.index(location_id)]
+            danger = input(
+                'Pick danger index (floating point 0-1), which indicates how likely the event is to break out into gunfight')
+            try:
+                danger = float(danger)
+            except ValueError:
+                print(f'Invalid value chosen as danger level!: {danger}')
+                return
 
-        health_index = input(
-            'Pick events health index (number), which indicates how difficult it is for policemen to finish')
-        try:
-            health_index = float(health_index)
-        except ValueError:
-            print(f'Invalid value chosen as health_index level!: {health_index}')
+            health_index = input(
+                'Pick events health index (number), which indicates how difficult it is for policemen to finish')
+            try:
+                health_index = float(health_index)
+            except ValueError:
+                print(f'Invalid value chosen as health_index level!: {health_index}')
+                return
 
-        location.intervention_event = InterventionEvent(danger, health_index, location)
+    location.intervention_event = InterventionEvent(danger, health_index, location)
 
 
 def interpret_command(input, sim_manager):

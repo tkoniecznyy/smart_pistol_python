@@ -1,1 +1,1 @@
-from .random_graph import gnp_directed_graph
+from .random_graph import gnp_random_graph

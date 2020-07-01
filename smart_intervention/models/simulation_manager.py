@@ -20,11 +20,15 @@ class SimulationManager:
         Performs a tick of the simulation
         :return TODO Preferably some kind of a snapshot for our simulation or a step-artifact for UI (like screen shot):
         """
-        notifications = Notifications.flush()
-        Notifications.clear()  # Super important, to have a clear store for each tick
-        actions = [actor.tick_action(notifications) for actor in self.actors]
+
+        print(f'notifications in round: {Notifications.get_last().get()}')
+        last_rounds_notifications = Notifications.get_last()
+        actions = [actor.tick_action(last_rounds_notifications) for actor in self.actors]
         for action in actions:
             action()
+
+        Notifications.clear()
+
 
     def add_actor(self, actor: BaseActor):
         self.actors.append(actor)

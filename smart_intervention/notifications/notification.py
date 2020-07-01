@@ -46,30 +46,27 @@ class Notification:
                 AmbulanceNotification.ASSISTING,
             ]
         }[requester.__class__]
-        return self.type in relevant_types_for_requester or self.type in relevant_instances_for_requester
+        return self.__class__ in relevant_types_for_requester or self.type in relevant_instances_for_requester
 
 
-class Notifications:
+class NotificationStore:
 
     def __init__(self, notification_list=None):
         self._notification_list = notification_list or []
-        self._cache = []
+        self._last = []
 
     def add(self, notification):
         self._notification_list.append(notification)
 
-    def get_all_cached(self):
-        return self._cache
-
-    def flush(self):
-        self._cache += self._notification_list  # Store this for viewing later in the report
-        return self
-
     def clear(self):
+        self._last = self._notification_list
         self._notification_list = []
 
+    def get_last(self):
+        return NotificationStore(self._last)
+
     def get_notifications_for_processing(self, requester):
-        return Notifications([
+        return NotificationStore([
             notification for notification in self._notification_list if notification.processed_by(requester)
         ])
 
@@ -81,3 +78,6 @@ class Notifications:
 
     def get(self):
         return self._notification_list
+
+    def send(self, type, actor, payload):
+        self.add(Notification(type, actor, payload))

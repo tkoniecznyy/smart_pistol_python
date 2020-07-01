@@ -41,10 +41,10 @@ class Policeman(PurposefulActor, GeolocatedActor):
 
     def tick_action(self, notifications) -> Callable:
         def action():
+            print(f'policeman #{id(self)} has access to: {notifications.get()}')
             processable_notifications = notifications.get_notifications_for_processing(self)
-            processable_notifications = processable_notifications.get()
             processable_notifications = [
-                notification for notification in processable_notifications
+                notification for notification in processable_notifications.get()
                 if notification.payload['policeman'] == self
             ]  # Filter out notifications for other instances of policemen
             self.log.debug(f'Received {len(processable_notifications)} processable notifications')
