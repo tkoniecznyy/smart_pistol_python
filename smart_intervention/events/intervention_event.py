@@ -90,4 +90,8 @@ class InterventionEvent:
         ) * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH]
 
     def dispatched_backup_sufficient(self, dispatched):
-        return self.missing_efficiency - self.sum_efficiency(dispatched) * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH] < 0
+        return self.missing_efficiency_with_backup_sent(dispatched) < 0
+
+    def missing_efficiency_with_backup_sent(self, dispatched):
+        return self.missing_efficiency - self.sum_efficiency(dispatched) * SimulationVariables[
+            SimulationVariableType.ROUNDS_TO_FINISH]

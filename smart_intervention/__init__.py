@@ -11,8 +11,9 @@ from random import random
 
 POLICEMEN_COUNT = 10
 AMBULANCES_COUNT = 3
-COMMAND_INSTRUCTION = 'Loop stopped, please enter command: \n\ts => step\n\tev => insert' \
-                      ' intervention event\n\tau => add policeman/ambulance\n\tpt => send policeman for patrol\n\texit => terminate program\n'
+COMMAND_INSTRUCTION = 'Loop stopped, please enter command: \n\ts => step\n\tev => insert ' \
+                      'intervention event\n\tau => add policeman/ambulance\n\tpt => send policeman for patrol\n\trc ' \
+                      '=> recall policeman back to hq\n\texit => terminate program\n '
 
 logging.basicConfig(format='%(name)s:%(levelname)s\t%(message)s', level=logging.INFO)
 
@@ -107,12 +108,10 @@ def validate_and_get_user_choice(list, id_choice):
     try:
         id_choice = int(id_choice) - 1
     except ValueError:
-        print('ERROR: Non-numeric table id given')
-        raise RuntimeError
+        raise RuntimeError('Non-numeric table id given')
 
     if id_choice not in range(0, len(list)):
-        print('ERROR: Chosen index out of range')
-        raise RuntimeError
+        raise RuntimeError('ERROR: Chosen index out of range')
 
     return list[id_choice]
 
@@ -153,8 +152,11 @@ def send_unit_to_patrol(sim_manager):
 
     policemen_ids = id_list(policemen)
     policeman_id = input(f'Pick a policeman id from this list:\n\t{policemen_ids}\n')
-
-    policeman = validate_and_get_user_choice(available_policemen, policeman_id)
+    try:
+        policeman = validate_and_get_user_choice(available_policemen, policeman_id)
+    except RuntimeError as r_err:
+        print(r_err)
+        return
     route = get_route_from_user()
     if not route:
         print('ERROR: Empty route not allowed. Aborting...')
@@ -164,11 +166,15 @@ def send_unit_to_patrol(sim_manager):
     policeman.re_purpose(PolicemanPurpose.PATROL)
 
 
-def create_intervention():
+def create_intervention(sim_manager):
     from smart_intervention.globals import CityMap
     from smart_intervention.events.intervention_event import InterventionEvent
     locations = CityMap.get_locations()
-    free_locations = [location for location in locations if not location.intervention_event]
+    forbidden_locations = [*sim_manager.police_outposts, sim_manager.ambulance_hq]
+    free_locations = [
+        location for location in locations
+        if not location.intervention_event and location not in forbidden_locations
+    ]
     if not free_locations:
         print('All of locations have an event, unable to create one. Aborting...')
 
@@ -206,9 +212,24 @@ def create_intervention():
     location.intervention_event = InterventionEvent(danger, health_index, location)
 
 
+def send_unit_back_to_hq(sim_manager):
+    patroling_policemen = [
+        actor for actor in sim_manager.actors
+        if hasattr(actor, 'purpose') and actor.purpose == PolicemanPurpose.PATROL
+    ]
+    if not patroling_policemen:
+        print('No currently patroling policemen! Aborting...')
+        return
+    policeman_id = input(f'Pick a patroling policeman from this list:\n\t{id_list(patroling_policemen)}\n')
+    policeman = validate_and_get_user_choice(patroling_policemen, policeman_id)
+    print(f'Sending Policeman #{id(policeman)} back to headquarter!')
+
+    policeman.route_with_purpose(policeman.policeman_hq, PolicemanPurpose.RETURNING_TO_HQ)
+
+
 def interpret_command(input, sim_manager):
     if input == 'ev':
-        create_intervention()
+        create_intervention(sim_manager)
     elif input == 'au':
         add_unit(sim_manager)
     elif input == 's':
@@ -216,6 +237,8 @@ def interpret_command(input, sim_manager):
         sim_manager.do_tick()
     elif input == 'pt':
         send_unit_to_patrol(sim_manager)
+    elif input == 'rc':
+        send_unit_back_to_hq(sim_manager)
     else:
         print('Unable to recognise command, please try again.')
 

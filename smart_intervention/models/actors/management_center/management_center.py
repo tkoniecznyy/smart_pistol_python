@@ -67,7 +67,7 @@ class ManagementCenter(BaseActor):
         dispatched_efficiency = InterventionEvent.sum_ambulances_and_units_efficiency(
             self._resource_monitor.get_dispatched_ambulances(event=event),
             self._resource_monitor.get_dispatched_to_intervention_units(event=event)
-        )
+        ) * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH]
         missing_efficiency = (event.missing_efficiency - dispatched_efficiency) * (1 + SimulationVariables[
             SimulationVariableType.REDUNDANCY_OF_MANPOWER
         ])
