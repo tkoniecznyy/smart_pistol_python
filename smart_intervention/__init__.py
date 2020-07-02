@@ -14,7 +14,7 @@ AMBULANCES_COUNT = 3
 COMMAND_INSTRUCTION = 'Loop stopped, please enter command: \n\ts => step\n\tev => insert' \
                       ' intervention event\n\tau => add policeman/ambulance\n\tpt => send policeman for patrol\n\texit => terminate program\n'
 
-logging.basicConfig(format='%(name)s:%(levelname)s\t%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(name)s:%(levelname)s\t%(message)s', level=logging.INFO)
 
 
 def generate_environment_and_actors():

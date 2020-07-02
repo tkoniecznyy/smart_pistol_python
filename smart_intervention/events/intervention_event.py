@@ -26,8 +26,8 @@ class InterventionEvent:
         self.log = logging.getLogger(f'InterventionEvent#{id(self)}')
 
     def mitigate(self, actor):
-        if random_decision(
-                SimulationVariables[SimulationVariableType.GUNFIGHT_BREAKOUT_RATE]) and not self.armed_combat:
+        added_probability = SimulationVariables[SimulationVariableType.GUNFIGHT_BREAKOUT_RATE] + self.danger_contexted
+        if random_decision(added_probability) and not self.armed_combat:
             self.log.info('Intervention has broken out into gunfight')
             self.armed_combat = True
             # We re-set event's health to initial health increased with contextual danger
@@ -60,7 +60,7 @@ class InterventionEvent:
 
     @property
     def danger_contexted(self):  # TODO: Implement using time contextualness here
-        return self._danger * (1 + self.location.danger_factor)
+        return self._danger + (1 + self.location.danger_factor)
 
     # Backup is sufficient, when participating entities can finish the intervention in one turn
     @property
@@ -87,7 +87,7 @@ class InterventionEvent:
     def missing_efficiency(self):
         return self.event_health - self.sum_ambulances_and_units_efficiency(
             self._actors_by_type[Policeman], self._actors_by_type[Ambulance]
-        )
+        ) * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH]
 
     def dispatched_backup_sufficient(self, dispatched):
-        return self.missing_efficiency - self.sum_efficiency(dispatched) < 0
+        return self.missing_efficiency - self.sum_efficiency(dispatched) * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH] < 0
