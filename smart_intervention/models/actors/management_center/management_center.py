@@ -66,7 +66,7 @@ class ManagementCenter(BaseActor):
 
         dispatched_efficiency = InterventionEvent.sum_ambulances_and_units_efficiency(
             self._resource_monitor.get_dispatched_ambulances(event=event),
-            self._resource_monitor.get_dispatched_to_intervention_units(event=event)
+            self._resource_monitor.get_dispatched_to_event_units(event=event)
         ) * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH]
         missing_efficiency = (event.missing_efficiency - dispatched_efficiency) * (1 + SimulationVariables[
             SimulationVariableType.REDUNDANCY_OF_MANPOWER
@@ -84,19 +84,19 @@ class ManagementCenter(BaseActor):
             if missing_efficiency > 0:
                 self.log.debug(f'Searching for policemen dispatched to intervention for event {id(event)}')
                 # Then - take policemen which are dispatched to intervention
-                dispatched_policemen = self._resource_monitor.get_dispatched_to_intervention_units()
+                dispatched_policemen = self._resource_monitor.get_dispatched_to_intervention_units(omit_event=event)
                 missing_efficiency = self._take_close_policemen(
                     missing_efficiency, event.location, dispatched_policemen, policemen
                 )
-                self._dispatch_ambulance(event)
 
                 if missing_efficiency > 0:
                     self.log.debug(f'Searching for intervening policemen for event {id(event)}')
                     # Last resort - take policemen which are intervening
-                    intervening_policemen = self._resource_monitor.get_intervening_units()
+                    intervening_policemen = self._resource_monitor.get_intervening_units(omit_event=event)
                     self._take_close_policemen(
                         missing_efficiency, event.location, intervening_policemen, policemen
                     )
+                    self._dispatch_ambulance(event)
             if policemen:
                 self.log.info(f'Sending policemen to gunfight intervention {id(event)}')
                 for policeman in policemen:
@@ -109,7 +109,7 @@ class ManagementCenter(BaseActor):
         while missing_efficiency > 0 and policemen:
             next_policeman = policemen.pop(0)
             policemen_to_take.append(next_policeman)
-            missing_efficiency -= next_policeman.efficiency
+            missing_efficiency -= next_policeman.efficiency * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH]
         return missing_efficiency
 
     @staticmethod

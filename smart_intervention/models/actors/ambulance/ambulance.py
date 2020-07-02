@@ -100,7 +100,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
             self.send_notification_with_location(AmbulanceNotification.ASSISTING)
             self.intervention_event.mitigate(self)
         else:
-            self._route_with_purpose(self.ambulance_hq, AmbulanceNotification.RETURNING_TO_HQ)
+            self._route_with_purpose(self.ambulance_hq, AmbulancePurpose.ROUTING_TO_HQ)
             self.send_notification(AmbulanceNotification.RETURNING_TO_HQ)
 
     def send_notification(self, notification_type, payload=None):

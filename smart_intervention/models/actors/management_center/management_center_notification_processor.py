@@ -72,7 +72,7 @@ class ManagementCenterNotificationProcessor:
         def process_one(notification):
             location = notification.payload['location']
             self._management_center.acknowledge_gunfight(
-                location.get_intervention_event,
+                location.intervention_event,
                 notification.actor
             )
 

@@ -39,14 +39,39 @@ class ManagementCenterResourceMonitor:
     def get_available_units(self):
         return self._units[ResourceState.AVAILABLE]
 
-    def get_intervening_units(self):
-        return self._units[ResourceState.INTERVENTION]
+    def get_intervening_units(self, omit_event=None):
+        units = self._units[ResourceState.INTERVENTION]
+        if omit_event:
+            return [
+                unit for unit in units
+                if unit.intervention_event != omit_event
+            ]
+        else:
+            return units
 
-    def get_dispatched_to_intervention_units(self, event=None):
+    def get_dispatched_to_intervention_units(self, event=None, omit_event=None):
+        units = self._units[ResourceState.DISPATCHED_TO_INTERVENTION]
         if event:
             return self._units_by_event[event][ResourceState.DISPATCHED_TO_INTERVENTION]
+        elif omit_event:
+
+            def unit_dispatched_to_event(unit, event):
+                in_same_event = unit.intervention_event == event
+                routing_to_same_event = (
+                        len(unit.current_route) > 0 and unit.current_route[-1].intervention_event == event
+                )
+                return in_same_event or routing_to_same_event
+
+            return [
+                unit for unit in units
+                if not unit_dispatched_to_event(unit, omit_event)
+            ]
         else:
-            return self._units[ResourceState.DISPATCHED_TO_INTERVENTION]
+            return units
+
+    def get_dispatched_to_event_units(self, event):
+        by_event = self._units_by_event[event]
+        return by_event[ResourceState.DISPATCHED_TO_INTERVENTION] + by_event[ResourceState.DISPATCHED_TO_GUNFIGHT]
 
     def get_dispatched_ambulances(self, event=None):
         if event:
