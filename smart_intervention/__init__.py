@@ -29,30 +29,41 @@ def generate_environment_and_actors():
     police_outposts = [pick_random(locations), pick_random(locations)]
     ambulance_hq = pick_random(locations)
 
+    print('Starting parameters:')
+
     def gen_policeman(_):
         hq = pick_random(police_outposts)
-        return Policeman(
+        policeman = Policeman(
             purpose=PolicemanPurpose.IDLE,
             location=hq,
             efficiency=round(random(), 2),
             policeman_hq=hq
         )
+        print(f'Policeman:\n\tEfficiency: {policeman.efficiency}\n\tPolice outpost: {id(policeman.policeman_hq)}')
+        return policeman
 
     policemen = generate_n(
         gen_policeman,
         n=POLICEMEN_COUNT
     )
-    ambulances = generate_n(
-        lambda _: Ambulance(
+
+    def gen_ambulance(_):
+        amb = Ambulance(
             purpose=AmbulancePurpose.IDLE,
             location=ambulance_hq,
             efficiency=round(random(), 2),
             ambulance_hq=ambulance_hq
-        ),
+        )
+        print(f'Ambulance:\n\tEfficiency: {amb.efficiency}\n\tHeadquarter: {id(amb.ambulance_hq)}')
+        return amb
+
+    ambulances = generate_n(
+        gen_ambulance,
         n=AMBULANCES_COUNT
     )
     MC = ManagementCenter(policemen)
     AHQ = AmbulanceHeadquarter(ambulances)
+    print('')
     return [
         *policemen,
         *ambulances,
@@ -228,16 +239,17 @@ def send_unit_back_to_hq(sim_manager):
 
 
 def interpret_command(input, sim_manager):
-    if input == 'ev':
+    inp_strip = input.strip()
+    if inp_strip == 'ev':
         create_intervention(sim_manager)
-    elif input == 'au':
+    elif inp_strip == 'au':
         add_unit(sim_manager)
-    elif input == 's':
+    elif inp_strip == 's':
         print('Performing simulation step...')
         sim_manager.do_tick()
-    elif input == 'pt':
+    elif inp_strip == 'pt':
         send_unit_to_patrol(sim_manager)
-    elif input == 'rc':
+    elif inp_strip == 'rc':
         send_unit_back_to_hq(sim_manager)
     else:
         print('Unable to recognise command, please try again.')

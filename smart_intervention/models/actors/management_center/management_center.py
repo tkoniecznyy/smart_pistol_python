@@ -118,7 +118,7 @@ class ManagementCenter(BaseActor):
             (CityMap.get_distance(policeman.location, location), policeman)
             for policeman in units
         ]
-        policemen_distances.sort(key=lambda x: x[0])
+        policemen_distances.sort(key=lambda x: (x[0], x[1].efficiency))
         return [tpl[1] for tpl in policemen_distances]
 
     def _process_interventions(self, interventions):
@@ -138,7 +138,7 @@ class ManagementCenter(BaseActor):
                     self.log.info(f'No available units found to dispatch to intervention {id(intervention)}')
 
     def _dispatch_to_intervention(self, unit, intervention):
-        self.log.info(f'Dispatching policeman #{id(unit)} to intervention')
+        self.log.info(f'Dispatching policeman #{id(unit)} with efficiency: {unit.efficiency} to intervention')
         self._dispatch_unit(
             unit, intervention,
             ManagementCenterNotification.DISPATCH_TO_INTERVENTION,
@@ -146,7 +146,7 @@ class ManagementCenter(BaseActor):
         )
 
     def _dispatch_to_gunfight(self, unit, intervention):
-        self.log.info(f'Dispatching policeman #{id(unit)} to gunfight')
+        self.log.info(f'Dispatching policeman #{id(unit)} with efficiency: {unit.efficiency} to gunfight')
         self._dispatch_unit(
             unit, intervention,
             resource_state=ResourceState.DISPATCHED_TO_GUNFIGHT,
