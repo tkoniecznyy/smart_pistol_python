@@ -26,7 +26,9 @@ class InterventionEvent:
         self.log = logging.getLogger(f'InterventionEvent#{id(self)}')
 
     def mitigate(self, actor):
-        added_probability = SimulationVariables[SimulationVariableType.GUNFIGHT_BREAKOUT_RATE] + self.danger_contexted
+        added_probability = (
+            1 + SimulationVariables[SimulationVariableType.GUNFIGHT_BREAKOUT_RATE]
+        ) * self.danger_contexted
         if random_decision(added_probability) and not self.armed_combat:
             self.log.info('Intervention has broken out into gunfight')
             self.armed_combat = True
@@ -42,12 +44,12 @@ class InterventionEvent:
 
                 if hasattr(actor, 'log'):
                     actor.log.info(
-                        f'Actor {actor.__class__.__name__}#{id(actor)} has taken down event health to {self.event_health}'
+                        f'Actor {actor.__class__.__name__}#{id(actor)} has taken down event health to {round(self.event_health,2)}'
                     )
                 if self.event_health < 0:
                     self.location.intervention_event = None
                     actor.log.info(
-                        f'Actor {actor.__class__.__name__}#{id(actor)} has successfully ended intervention! {self.event_health}'
+                        f'Actor {actor.__class__.__name__}#{id(actor)} has successfully ended intervention! {round(self.event_health,2)}'
                     )
 
     def join(self, actor):
@@ -60,7 +62,7 @@ class InterventionEvent:
 
     @property
     def danger_contexted(self):  # TODO: Implement using time contextualness here
-        return self._danger + (1 + self.location.danger_factor)
+        return self._danger * (1 + self.location.danger_factor)
 
     # Backup is sufficient, when participating entities can finish the intervention in one turn
     @property
@@ -93,5 +95,11 @@ class InterventionEvent:
         return self.missing_efficiency_with_backup_sent(dispatched) < 0
 
     def missing_efficiency_with_backup_sent(self, dispatched):
-        return self.missing_efficiency - self.sum_efficiency(dispatched) * SimulationVariables[
-            SimulationVariableType.ROUNDS_TO_FINISH]
+        dispatched_not_arrived = [
+            policeman for policeman in dispatched
+            if policeman not in self._actors_by_type[Policeman]
+        ]
+        missing = self.missing_efficiency - (
+                self.sum_efficiency(dispatched_not_arrived) * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH]
+        )
+        return missing

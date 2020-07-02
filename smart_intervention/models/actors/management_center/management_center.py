@@ -154,7 +154,7 @@ class ManagementCenter(BaseActor):
         )
 
     def _dispatch_unit(self, unit, event, notification_type, resource_state):
-        self._resource_monitor.set_unit_state(unit, resource_state)
+        self._resource_monitor.set_unit_state(unit, resource_state, event)
         Notifications.send(
             notification_type, self,
             payload={
