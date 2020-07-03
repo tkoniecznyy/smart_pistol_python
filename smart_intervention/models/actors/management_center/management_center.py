@@ -38,6 +38,9 @@ class ManagementCenter(BaseActor):
                 intervention for intervention in interventions
                 if not intervention.armed_combat and intervention.active
             ]
+            not_gunfight_interventions.sort(
+                key=lambda intervention: len(self._resource_monitor.get_dispatched_and_intervening(intervention))
+            )
             self._process_interventions(not_gunfight_interventions)
 
         return action
@@ -109,7 +112,8 @@ class ManagementCenter(BaseActor):
         while missing_efficiency > 0 and policemen:
             next_policeman = policemen.pop(0)
             policemen_to_take.append(next_policeman)
-            missing_efficiency -= next_policeman.efficiency * SimulationVariables[SimulationVariableType.ROUNDS_TO_FINISH]
+            missing_efficiency -= next_policeman.efficiency * SimulationVariables[
+                SimulationVariableType.ROUNDS_TO_FINISH]
         return missing_efficiency
 
     @staticmethod
@@ -118,7 +122,7 @@ class ManagementCenter(BaseActor):
             (CityMap.get_distance(policeman.location, location), policeman)
             for policeman in units
         ]
-        policemen_distances.sort(key=lambda x: (x[0], x[1].efficiency))
+        policemen_distances.sort(key=lambda x: (x[0], -x[1].efficiency))
         return [tpl[1] for tpl in policemen_distances]
 
     def _process_interventions(self, interventions):
@@ -177,3 +181,6 @@ class ManagementCenter(BaseActor):
                 }
             )
             self._resource_monitor.set_ambulance_requested(event)
+
+    def add_managed_unit(self, actor):
+        self._resource_monitor.add_new_unit(actor)

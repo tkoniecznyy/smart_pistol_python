@@ -30,8 +30,22 @@ class SimulationManager:
 
         Notifications.clear()
 
+    @staticmethod
+    def get_actor_type(actor):
+        return actor.__class__.__name__
+
+    def get_actor_by_type(self, actor_type):
+        return next(act for act in self.actors if self.get_actor_type(act) == actor_type)
+
     def add_actor(self, actor: BaseActor):
         self.actors.append(actor)
+        actor_type = self.get_actor_type(actor)
+
+        if actor_type == 'Policeman':
+            self.get_actor_by_type('ManagementCenter').add_managed_unit(actor)
+
+        elif actor_type == 'Ambulance':
+            self.get_actor_by_type('AmbulanceManagementCenter').add_managed_ambulance(actor)
 
     def get_policemen(self):
         return [actor for actor in self.actors if actor.__class__.__name__ == 'Policeman']

@@ -79,6 +79,10 @@ class ManagementCenterResourceMonitor:
         else:
             return self._units[ResourceState.DISPATCHED]
 
+    def get_dispatched_and_intervening(self, event):
+        by_event = self._units_by_event[event]
+        return by_event[ResourceState.DISPATCHED_TO_INTERVENTION] + by_event[ResourceState.INTERVENTION]
+
     def set_ambulance_state(self, ambulance, state, event):
         self._remove_from_other_states(ambulance, self._ambulances, self._ambulances_by_event)
         self._set_state(ambulance, state, event, self._ambulances, self._ambulances_by_event)
@@ -94,6 +98,9 @@ class ManagementCenterResourceMonitor:
 
     def ambulance_requested(self, event):
         return self._ambulances_by_event[event][ResourceState.REQUESTED]
+
+    def add_new_unit(self, unit):
+        self._units[ResourceState.AVAILABLE].append(unit)
 
     def _set_state(self, actor, state, event, by_state, by_event):
         by_state[state].append(actor)

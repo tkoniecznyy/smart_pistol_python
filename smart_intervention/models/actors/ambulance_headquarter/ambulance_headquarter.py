@@ -58,3 +58,6 @@ class AmbulanceHeadquarter(BaseActor):
         else:
             self.log.info(f'No available ambulance found for event #{id(event)}')
             return False
+
+    def add_managed_ambulance(self, ambulance):
+        self._resource_monitor.add_new_ambulance(ambulance)

@@ -90,7 +90,7 @@ def add_unit(sim_manager):
     except ValueError:
         print(f'Invalid value chosen as actors efficiency!: {eff}')
         return
-
+    actor = None
     if actor_type == 'p':
         outposts = sim_manager.police_outposts
 
@@ -98,7 +98,7 @@ def add_unit(sim_manager):
         outpost = validate_and_get_user_choice(outposts, location_id)
 
         print(f'Policeman inserted!\n\tOutpost: {id(outpost)}\n\tEfficiency: {eff}\n')
-        return Policeman(
+        actor = Policeman(
             purpose=PolicemanPurpose.IDLE,
             location=outpost,
             efficiency=eff,
@@ -107,12 +107,14 @@ def add_unit(sim_manager):
     elif actor_type == 'a':
         a_hq = sim_manager.ambulance_hq
         print(f'Ambulance inserted!\n\tHeadquarter: {id(a_hq)}\n\tEfficiency: {eff}\n')
-        return Ambulance(
+        actor = Ambulance(
             purpose=AmbulancePurpose.IDLE,
             location=a_hq,
             efficiency=eff,
             ambulance_hq=a_hq
         )
+    if actor:
+        sim_manager.add_actor(actor)
 
 
 def validate_and_get_user_choice(list, id_choice):

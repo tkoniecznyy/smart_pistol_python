@@ -25,3 +25,6 @@ class AmbulanceHeadquarterResourceMonitor:
 
     def get_available_ambulances(self):
         return self._ambulances_by_state[AmbulanceResourceState.AVAILABLE]
+
+    def add_new_ambulance(self, ambulance):
+        self._ambulances_by_state[AmbulanceResourceState.AVAILABLE].append(ambulance)
