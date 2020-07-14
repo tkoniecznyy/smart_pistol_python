@@ -47,7 +47,9 @@ class Policeman(PurposefulActor, GeolocatedActor):
                 notification for notification in processable_notifications.get()
                 if notification.payload['policeman'] == self
             ]  # Filter out notifications for other instances of policemen
-            self.log.debug(f'Received {len(processable_notifications)} processable notifications')
+            processable_number = len(processable_notifications)
+            self.log.debug(f'Received {processable_number} processable notifications')
+            Notifications.declare_received(processable_number)
             PolicemanNotificationProcessor(self).process(processable_notifications)
             PolicemanAction(self).execute()
 

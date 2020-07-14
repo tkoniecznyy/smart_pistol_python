@@ -31,7 +31,9 @@ class ManagementCenter(BaseActor):
         processable_notifications = notifications.get_notifications_for_processing(self)
 
         def action():
-            self.log.debug(f'Received {len(processable_notifications.get())} processable notifications')
+            processable_len = len(processable_notifications.get())
+            self.log.debug(f'Received {processable_len} processable notifications')
+            Notifications.declare_received(processable_len)
             ManagementCenterNotificationProcessor(self).process(processable_notifications)
             interventions = CityMap.get_interventions()
             not_gunfight_interventions = [

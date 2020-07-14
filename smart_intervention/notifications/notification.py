@@ -65,6 +65,7 @@ class NotificationStore:
     def __init__(self, notification_list=None):
         self._notification_list = notification_list or []
         self._last = []
+        self.received = 0
 
     def add(self, notification):
         self._notification_list.append(notification)
@@ -92,3 +93,9 @@ class NotificationStore:
 
     def send(self, type, actor, payload):
         self.add(Notification(type, actor, payload))
+
+    def clear_received(self):
+        self.received = 0
+
+    def declare_received(self, received_no):
+        self.received += received_no

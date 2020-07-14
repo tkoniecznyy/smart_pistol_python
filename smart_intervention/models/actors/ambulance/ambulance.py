@@ -35,7 +35,9 @@ class Ambulance(PurposefulActor, GeolocatedActor):
                 notification for notification in processable_notifications
                 if notification.payload['ambulance'] == self
             ]  # Filter out notifications for other instances of ambulances
-            self.log.debug(f'Received {len(processable_notifications)} processable notifications')
+            processable_len = len(processable_notifications)
+            Notifications.declare_received(processable_len)
+            self.log.debug(f'Received {processable_len} processable notifications')
             self._process_notifications(processable_notifications)
             self._take_action()
 

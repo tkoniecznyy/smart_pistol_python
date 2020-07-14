@@ -15,6 +15,9 @@ class Map:
 
     def __init__(self, graph: nx.Graph):
         self.graph = graph
+        self.moves = 0
+        self.policeman_moves = 0
+        self.ambulance_moves = 0
 
     def route(self, source: Location, target: Location):
         if self.graph.has_node(source) and self.graph.has_node(target):
@@ -43,3 +46,17 @@ class Map:
 
     def are_neighbors(self, a, b):
         return b in self.graph.neighbors(a)
+
+    def declare_move(self):
+        self.moves += 1
+
+    def declare_policeman_move(self):
+        self.policeman_moves += 1
+
+    def declare_ambulance_move(self):
+        self.ambulance_moves += 1
+
+    def clear_moves(self):
+        self.moves = 0
+        self.policeman_moves = 0
+        self.ambulance_moves = 0

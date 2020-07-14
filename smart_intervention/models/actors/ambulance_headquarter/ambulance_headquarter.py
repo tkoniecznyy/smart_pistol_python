@@ -22,7 +22,9 @@ class AmbulanceHeadquarter(BaseActor):
         processable_notifications = notifications.get_notifications_for_processing(self)
 
         def action():
-            self.log.debug(f'Received {len(processable_notifications.get())} processable notifications')
+            processable_len = len(processable_notifications.get())
+            Notifications.declare_received(processable_len)
+            self.log.debug(f'Received {processable_len} processable notifications')
             AmbulanceHeadquarterNotificationProcessor(self).process(processable_notifications)
 
         return action

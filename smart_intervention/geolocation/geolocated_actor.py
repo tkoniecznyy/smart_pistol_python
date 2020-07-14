@@ -37,6 +37,18 @@ class GeolocatedActor(ABC):
             self.log.info(f'Moving to {id(first_waypoint)}')
 
     def move_to(self, location):
+        self.declare_move()
         self.location.remove_actor(self)
         self.location = location
         self.location.add_actor(self)
+
+    def declare_move(self):
+        CityMap.declare_move()
+
+        actor_class = self.__class__.__name__
+        if actor_class == 'Policeman':
+            CityMap.declare_policeman_move()
+        elif actor_class == 'Ambulance':
+            CityMap.declare_ambulance_move()
+        else:
+            raise RuntimeError('Did not recognise geo actor class')
