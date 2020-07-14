@@ -86,7 +86,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
             self.re_purpose(AmbulancePurpose.ASSISTING)
             self.log.info(f'Joined intervention event {id(intervention_event)} to assist')
         else:
-            raise AmbulanceError('No event in given location')
+            self._route_with_purpose(self.ambulance_hq, AmbulancePurpose.ROUTING_TO_HQ)
 
     def _routing_actions(self):
         try:

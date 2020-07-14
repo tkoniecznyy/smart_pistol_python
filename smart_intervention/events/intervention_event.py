@@ -29,28 +29,31 @@ class InterventionEvent:
         added_probability = (
             1 + SimulationVariables[SimulationVariableType.GUNFIGHT_BREAKOUT_RATE]
         ) * self.danger_contexted
-        if random_decision(added_probability) and not self.armed_combat:
-            self.log.info('Intervention has broken out into gunfight')
-            self.armed_combat = True
-            # We re-set event's health to initial health increased with contextual danger
-            self.event_health = self._initial_health + (self._initial_health * self.danger_contexted)
-        else:
-            if self.event_health > 0:
-                if actor.__class__ is Policeman:
-                    self.event_health -= actor.efficiency  # Simple 1-1
-                elif actor.__class__ is Ambulance:
-                    seq = self._actors_by_type[Ambulance].index(actor)
-                    self.event_health -= actor.efficiency * (1 / (2 ** seq))  # Subtract by the formula
+        if self.active:
+            if random_decision(added_probability) and not self.armed_combat:
+                self.log.info('Intervention has broken out into gunfight')
+                self.armed_combat = True
+                # We re-set event's health to initial health increased with contextual danger
+                self.event_health = self._initial_health + (self._initial_health * self.danger_contexted)
+            else:
+                if self.event_health > 0:
+                    if actor.__class__ is Policeman:
+                        self.event_health -= actor.efficiency  # Simple 1-1
+                    elif actor.__class__ is Ambulance:
+                        seq = self._actors_by_type[Ambulance].index(actor)
+                        self.event_health -= actor.efficiency * (1 / (2 ** seq))  # Subtract by the formula
 
-                if hasattr(actor, 'log'):
-                    actor.log.info(
-                        f'Actor {actor.__class__.__name__}#{id(actor)} has taken down event health to {round(self.event_health,2)}'
-                    )
+                    if hasattr(actor, 'log'):
+                        actor.log.info(
+                            f'Actor {actor.__class__.__name__}#{id(actor)} has taken down event health to {round(self.event_health,2)}'
+                        )
                 if self.event_health < 0:
                     self.location.intervention_event = None
                     actor.log.info(
                         f'Actor {actor.__class__.__name__}#{id(actor)} has successfully ended intervention! {round(self.event_health,2)}'
                     )
+        else:
+            self.location.intervention_event = None
 
     def join(self, actor):
         self.log.info(f'Actor {actor.__class__.__name__}#{id(actor)} has joined the intervention')

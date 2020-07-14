@@ -56,11 +56,11 @@ class ManagementCenterNotificationProcessor:
         def process_one(notification):
             location = notification.payload['location']
             event = location.intervention_event
-            if event.active:
+            if event and event.active:
                 clustered_notifications[event].append(notification)
             else:
                 # This is a no-op
-                raise RuntimeWarning('A backup needed notification has been received from a finished event')
+                return
 
         for notification in notifications:
             process_one(notification)

@@ -60,3 +60,6 @@ class Map:
         self.moves = 0
         self.policeman_moves = 0
         self.ambulance_moves = 0
+
+    def clear_inactive_interventions(self):
+        pass
