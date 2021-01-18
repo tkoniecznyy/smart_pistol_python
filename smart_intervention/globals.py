@@ -8,7 +8,7 @@ from smart_intervention.simulation_variable_type import SimulationVariableType
 NODE_COUNT = 10
 nodes = generate_n(lambda _: Location(), n=NODE_COUNT)
 city_graph = path_graph(nodes)
-Notifications = NotificationStore()  # TODO: Rename that. This collides with notifications passed around as objects
+notifications = NotificationStore()  # TODO: Rename that. This collides with notifications passed around as objects
 CityMap = Map(city_graph)
 SimulationVariables = {
     SimulationVariableType.GUNFIGHT_BREAKOUT_RATE: 0.3,  # How often do GENERALLY events turn into gunfights?

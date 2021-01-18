@@ -1,7 +1,7 @@
 import logging
 from typing import Callable
 
-from smart_intervention.globals import Notifications, CityMap
+from smart_intervention.globals import notifications, CityMap
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
     AmbulanceHeadquarterNotification
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification_processor import \
@@ -23,7 +23,7 @@ class AmbulanceHeadquarter(BaseActor):
 
         def action():
             processable_len = len(processable_notifications.get())
-            Notifications.declare_received(processable_len)
+            notifications.declare_received(processable_len)
             self.log.debug(f'Received {processable_len} processable notifications')
             AmbulanceHeadquarterNotificationProcessor(self).process(processable_notifications)
 
@@ -47,7 +47,7 @@ class AmbulanceHeadquarter(BaseActor):
             ambulances_by_proximity = self._by_proximity(available_ambulances, event.location)
             ambulance = ambulances_by_proximity[0]
             self._resource_monitor.set_ambulance_state(ambulance, AmbulanceResourceState.BUSY)
-            Notifications.send(
+            notifications.send(
                 type=AmbulanceHeadquarterNotification.DISPATCH_TO_EVENT,
                 actor=self,
                 payload={

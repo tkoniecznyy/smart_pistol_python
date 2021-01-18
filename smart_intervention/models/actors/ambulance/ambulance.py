@@ -2,7 +2,7 @@ import logging
 from typing import Callable
 
 from smart_intervention.geolocation.location import Location
-from smart_intervention.globals import Notifications, CityMap
+from smart_intervention.globals import notifications, CityMap
 from smart_intervention.geolocation.geolocated_actor import GeolocatedActor
 from smart_intervention.geolocation.map import RoutingError
 from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
@@ -36,7 +36,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
                 if notification.payload['ambulance'] == self
             ]  # Filter out notifications for other instances of ambulances
             processable_len = len(processable_notifications)
-            Notifications.declare_received(processable_len)
+            notifications.declare_received(processable_len)
             self.log.debug(f'Received {processable_len} processable notifications')
             self._process_notifications(processable_notifications)
             self._take_action()
@@ -107,7 +107,7 @@ class Ambulance(PurposefulActor, GeolocatedActor):
 
     def send_notification(self, notification_type, payload=None):
         self.log.debug(f'Sending notification {notification_type.value}, payload: {payload}')
-        Notifications.send(
+        notifications.send(
             type=notification_type,
             actor=self,
             payload=payload

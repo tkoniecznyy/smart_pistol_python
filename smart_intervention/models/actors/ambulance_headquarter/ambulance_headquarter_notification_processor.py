@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from smart_intervention.globals import Notifications
+from smart_intervention.globals import notifications
 from smart_intervention.models.actors.ambulance.ambulance_notification import AmbulanceNotification
 from smart_intervention.models.actors.ambulance_headquarter.ambulance_headquarter_notification import \
     AmbulanceHeadquarterNotification
@@ -43,7 +43,7 @@ class AmbulanceHeadquarterNotificationProcessor:
             ambulance = self._ambulance_hq.dispatch_ambulance_to(event)
             if ambulance:
                 self._ambulance_hq.log.debug(f'Accepted a request for ambulance for event {id(event)}')
-                Notifications.send(
+                notifications.send(
                     AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_ACCEPTED,
                     self,
                     payload={
@@ -53,7 +53,7 @@ class AmbulanceHeadquarterNotificationProcessor:
                 )
             else:
                 self._ambulance_hq.log.debug(f'Rejected a request for ambulance for event {id(event)}')
-                Notifications.send(
+                notifications.send(
                     AmbulanceHeadquarterNotification.AMBULANCE_REQUEST_REJECTED,
                     self,
                     payload={

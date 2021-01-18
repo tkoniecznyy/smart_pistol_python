@@ -2,7 +2,7 @@ from typing import List
 
 from smart_intervention import PolicemanPurpose, AmbulancePurpose
 from smart_intervention.models.actors.bases.base_actor import BaseActor
-from smart_intervention.globals import Notifications, CityMap
+from smart_intervention.globals import notifications, CityMap
 import csv
 
 CSV_ROWS = [
@@ -50,9 +50,9 @@ class SimulationManager:
         :return Log line
         """
 
-        Notifications.clear_received()
-        last_rounds_notifications = Notifications.get_last()
-        Notifications.clear()
+        notifications.clear_received()
+        last_rounds_notifications = notifications.get_last()
+        notifications.clear()
         self.turn += 1
         actions = [actor.tick_action(last_rounds_notifications) for actor in self.actors]
         for action in actions:
@@ -63,7 +63,7 @@ class SimulationManager:
         self._csv_log([
             self.turn,
             number_notifications,
-            Notifications.received,
+            notifications.received,
             active_interventions,
             CityMap.moves,
             len(self.get_ambulances()),

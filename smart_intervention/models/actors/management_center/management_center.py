@@ -2,7 +2,7 @@ import logging
 from typing import Callable
 
 from smart_intervention.simulation_variable_type import SimulationVariableType
-from smart_intervention.globals import Notifications, CityMap, SimulationVariables
+from smart_intervention.globals import notifications, CityMap, SimulationVariables
 from smart_intervention.events.intervention_event import InterventionEvent
 from smart_intervention.models.actors.bases import BaseActor
 from smart_intervention.models.actors.management_center.management_center_notification import \
@@ -33,7 +33,7 @@ class ManagementCenter(BaseActor):
         def action():
             processable_len = len(processable_notifications.get())
             self.log.debug(f'Received {processable_len} processable notifications')
-            Notifications.declare_received(processable_len)
+            notifications.declare_received(processable_len)
             ManagementCenterNotificationProcessor(self).process(processable_notifications)
             interventions = CityMap.get_interventions()
             not_gunfight_interventions = [
@@ -161,7 +161,7 @@ class ManagementCenter(BaseActor):
 
     def _dispatch_unit(self, unit, event, notification_type, resource_state):
         self._resource_monitor.set_unit_state(unit, resource_state, event)
-        Notifications.send(
+        notifications.send(
             notification_type, self,
             payload={
                 'location': event.location,
@@ -176,7 +176,7 @@ class ManagementCenter(BaseActor):
         # Or when already requested for that event
         if ambulances_available_for_event and not requested_ambulance_for_event:
             self.log.info(f'Requesting ambulance assistance for event {id(event)}')
-            Notifications.send(
+            notifications.send(
                 ManagementCenterNotification.REQUEST_AMBULANCE_ASSISTANCE, self,
                 payload={
                     'location': event.location
